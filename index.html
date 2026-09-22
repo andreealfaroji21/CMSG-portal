@@ -14,9 +14,8 @@
     <header class="bg-blue-900 text-white shadow-md">
         <div class="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
             <div class="flex items-center space-x-4">
-                <!-- Logo Aetra Air Tangerang -->
                 <div class="bg-white p-2 rounded-lg shadow-sm flex items-center justify-center">
-                    <img src="Logo Aetra Air Tangerang.jpg" alt="Logo PT Aetra Air Tangerang" class="h-10 w-auto object-contain">
+                    <img src="https://i.ibb.co/L9vL93Z/Logo-Aetra-Air-Tangerang.jpg" alt="Logo PT Aetra Air Tangerang" class="h-10 w-auto object-contain">
                 </div>
                 <div>
                     <h1 class="text-xl font-bold tracking-wide">PT AETRA AIR TANGERANG</h1>
@@ -35,21 +34,18 @@
             <p id="formInstruction" class="text-xs text-slate-500 mb-6">Masukkan Nomor Pelanggan dan Nomor WhatsApp terdaftar untuk menerima OTP.</p>
             
             <div class="space-y-4">
-                <!-- Field 1: Nomor Pelanggan -->
                 <div>
                     <label class="block text-xs font-semibold text-slate-600 mb-1">Nomor Pelanggan</label>
                     <input type="text" id="inputNoPelanggan" placeholder="Contoh: 92728111028" 
                         class="w-full px-4 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600">
                 </div>
 
-                <!-- Field 2: Nomor WhatsApp / Kode OTP -->
                 <div>
                     <label id="labelWaOtp" class="block text-xs font-semibold text-slate-600 mb-1">Nomor WhatsApp Terdaftar</label>
                     <input type="text" id="inputWaOtp" placeholder="Contoh: 087796842024" 
                         class="w-full px-4 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600">
                 </div>
 
-                <!-- Tombol Aksi -->
                 <button id="btnAction" onclick="handleAuthAction()" 
                     class="w-full bg-blue-800 hover:bg-blue-900 text-white font-medium px-6 py-2.5 rounded-md transition-colors">
                     Kirim Kode OTP
@@ -59,12 +55,11 @@
                     Batal / Ubah Nomor Pelanggan
                 </button>
             </div>
-            <p id="errorMessage" class="text-red-500 text-xs mt-3 hidden"></p>
+            <p id="errorMessage" class="text-red-500 text-xs mt-3 font-semibold hidden"></p>
         </div>
 
         <!-- Tampilan Hasil Informasi & Historis Treatment -->
         <div id="resultContainer" class="hidden space-y-6">
-            <!-- Informasi Pelanggan -->
             <div class="bg-white rounded-lg shadow-md p-6">
                 <div class="flex justify-between items-center border-b pb-2 mb-4">
                     <h3 class="text-md font-semibold text-slate-500 uppercase tracking-wide">Informasi Pelanggan</h3>
@@ -94,19 +89,16 @@
                 </div>
             </div>
 
-            <!-- Timeline Historis Treatment -->
             <div class="bg-white rounded-lg shadow-md p-6">
                 <h3 class="text-md font-semibold text-slate-500 uppercase tracking-wide border-b pb-2 mb-6">Historis Treatment & Tindakan Field</h3>
-                <div id="timelineContainer" class="relative border-l-2 border-blue-200 ml-4 space-y-6">
-                    <!-- Timeline diisi via JS -->
-                </div>
+                <div id="timelineContainer" class="relative border-l-2 border-blue-200 ml-4 space-y-6"></div>
             </div>
         </div>
 
     </main>
 
     <script>
-        // --- KONFIGURASI SUPABASE ---
+        // --- UBAH DUA BARIS DI BAWAH DENGAN DATA DARI SUPABASE ANDA ---
         const SUPABASE_URL = "https://wpjwoogpvmuguutwtuxj.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indwandvb2dwdm11Z3V1dHd0dXhqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAwNDM3NDAsImV4cCI6MjEwNTYxOTc0MH0.iY7ekod54fU1Dtdw8_eeO65G_W6UVQJzCz8SgbfYaIQ";
         
@@ -124,7 +116,6 @@
             }
         }
 
-        // Helper normalisasi nomor HP
         function normalizePhone(phone) {
             if (!phone) return '';
             let cleaned = phone.replace(/\D/g, '');
@@ -134,9 +125,7 @@
             return cleaned;
         }
 
-        // Tahap 1: Validasi Pelanggan & Minta OTP (Versi Bebas Spasi)
         async function prosesMintaOTP() {
-            // .trim() dan hapus semua spasi di tengah
             const noPelanggan = document.getElementById('inputNoPelanggan').value.replace(/\s+/g, '').trim();
             const rawNoWA = document.getElementById('inputWaOtp').value.replace(/\s+/g, '').trim();
             const errorMessage = document.getElementById('errorMessage');
@@ -148,35 +137,38 @@
                 return;
             }
 
-            // Cari data di Supabase
+            // Query ke Supabase
             const { data: pelanggan, error } = await supabaseClient
                 .from('pelanggan')
                 .select('*')
-                .eq('nomor_pelanggan', noPelanggan)
-                .maybeSingle(); // Menggunakan maybeSingle agar lebih aman dari error null
+                .eq('nomor_pelanggan', noPelanggan);
 
-            if (error || !pelanggan) {
-                showError("Nomor Pelanggan tidak ditemukan. Periksa kembali input Anda.");
+            if (error) {
+                showError("Error Database: " + error.message);
                 return;
             }
 
-            // Cocokkan nomor WhatsApp
+            if (!pelanggan || pelanggan.length === 0) {
+                showError("Nomor Pelanggan tidak ditemukan dalam database.");
+                return;
+            }
+
+            const dataTarget = pelanggan[0];
+
+            // Validasi Nomor WA
             const inputWaClean = normalizePhone(rawNoWA);
-            const dbWaClean = normalizePhone(pelanggan.nomor_whatsapp);
+            const dbWaClean = normalizePhone(dataTarget.nomor_whatsapp);
 
             if (inputWaClean !== dbWaClean) {
                 showError("Nomor WhatsApp tidak cocok dengan data terdaftar.");
                 return;
             }
 
-            // Simpan Data & Buat Kode OTP 4 Digit
-            currentPelangganData = pelanggan;
+            currentPelangganData = dataTarget;
             currentGeneratedOTP = Math.floor(1000 + Math.random() * 9000).toString();
 
-            // Pop-up OTP
             alert(`[SIMULASI OTP WA]\nKode OTP verifikasi Anda adalah: ${currentGeneratedOTP}`);
 
-            // Ubah Tampilan Kolom WA Menjadi OTP
             isOtpSent = true;
             document.getElementById('inputNoPelanggan').disabled = true;
             document.getElementById('inputNoPelanggan').classList.add('bg-slate-100');
@@ -197,7 +189,6 @@
             document.getElementById('btnResetOtp').classList.remove('hidden');
         }
 
-        // Tahap 2: Verifikasi OTP
         async function prosesVerifikasiOTP() {
             const inputOTP = document.getElementById('inputWaOtp').value.trim();
 
@@ -206,7 +197,6 @@
                 return;
             }
 
-            // Jika OTP Benar, Tampilkan Data
             const pelanggan = currentPelangganData;
             document.getElementById('resNoPelanggan').innerText = pelanggan.nomor_pelanggan;
             document.getElementById('resNama').innerText = pelanggan.nama_pelanggan;
@@ -214,7 +204,6 @@
             document.getElementById('resStatus').innerText = pelanggan.status_tagihan_saat_ini;
             document.getElementById('resTunggakan').innerText = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(pelanggan.total_tunggakan);
 
-            // Fetch Historis Treatment
             const { data: treatments } = await supabaseClient
                 .from('historis_treatment')
                 .select('*')
@@ -223,7 +212,6 @@
 
             renderTimeline(treatments || []);
 
-            // Sembunyikan Form, Tampilkan Hasil
             document.getElementById('searchFormCard').classList.add('hidden');
             document.getElementById('resultContainer').classList.remove('hidden');
         }
