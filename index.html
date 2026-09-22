@@ -134,10 +134,11 @@
             return cleaned;
         }
 
-        // Tahap 1: Validasi Pelanggan & Minta OTP
+        // Tahap 1: Validasi Pelanggan & Minta OTP (Versi Bebas Spasi)
         async function prosesMintaOTP() {
-            const noPelanggan = document.getElementById('inputNoPelanggan').value.trim();
-            const rawNoWA = document.getElementById('inputWaOtp').value.trim();
+            // .trim() dan hapus semua spasi di tengah
+            const noPelanggan = document.getElementById('inputNoPelanggan').value.replace(/\s+/g, '').trim();
+            const rawNoWA = document.getElementById('inputWaOtp').value.replace(/\s+/g, '').trim();
             const errorMessage = document.getElementById('errorMessage');
 
             errorMessage.classList.add('hidden');
@@ -152,14 +153,14 @@
                 .from('pelanggan')
                 .select('*')
                 .eq('nomor_pelanggan', noPelanggan)
-                .single();
+                .maybeSingle(); // Menggunakan maybeSingle agar lebih aman dari error null
 
             if (error || !pelanggan) {
-                showError("Nomor Pelanggan tidak ditemukan.");
+                showError("Nomor Pelanggan tidak ditemukan. Periksa kembali input Anda.");
                 return;
             }
 
-            // Cocokkan nomor WhatsApp yang di-normalisasi
+            // Cocokkan nomor WhatsApp
             const inputWaClean = normalizePhone(rawNoWA);
             const dbWaClean = normalizePhone(pelanggan.nomor_whatsapp);
 
@@ -168,14 +169,14 @@
                 return;
             }
 
-            // Simpan Data & Buat Kode OTP 4 Digit Random
+            // Simpan Data & Buat Kode OTP 4 Digit
             currentPelangganData = pelanggan;
             currentGeneratedOTP = Math.floor(1000 + Math.random() * 9000).toString();
 
-            // Simulasi Pemberitahuan Kode OTP
+            // Pop-up OTP
             alert(`[SIMULASI OTP WA]\nKode OTP verifikasi Anda adalah: ${currentGeneratedOTP}`);
 
-            // Ubah Tampilan Kolom WA Menjadi Kolom Input OTP
+            // Ubah Tampilan Kolom WA Menjadi OTP
             isOtpSent = true;
             document.getElementById('inputNoPelanggan').disabled = true;
             document.getElementById('inputNoPelanggan').classList.add('bg-slate-100');
