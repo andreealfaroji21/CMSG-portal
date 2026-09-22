@@ -15,8 +15,8 @@
         <div class="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
             <div class="flex items-center space-x-4">
                 <!-- Logo Aetra Air Tangerang -->
-                <div class="bg-white p-1.5 rounded-lg shadow">
-                    <img src="Logo Aetra Air Tangerang.jpg" alt="Logo PT Aetra Air Tangerang" class="h-12 w-auto object-contain" onerror="this.onerror=null; this.src='https://via.placeholder.com/120x60?text=AETRA+LOGO';">
+                <div class="bg-white p-2 rounded-lg shadow-sm flex items-center justify-center">
+                    <img src="https://i.ibb.co/L9vL93Z/Logo-Aetra-Air-Tangerang.jpg" alt="Logo PT Aetra Air Tangerang" class="h-10 w-auto object-contain">
                 </div>
                 <div>
                     <h1 class="text-xl font-bold tracking-wide">PT AETRA AIR TANGERANG</h1>
@@ -29,7 +29,7 @@
     <!-- Main Content -->
     <main class="max-w-4xl mx-auto px-4 py-8">
         
-        <!-- Form Pencarian & Verifikasi OTP (Dalam 1 Kolom Input WA / OTP) -->
+        <!-- Form Pencarian & Verifikasi OTP -->
         <div id="searchFormCard" class="bg-white rounded-lg shadow-md p-6 mb-8 max-w-xl mx-auto">
             <h2 class="text-lg font-semibold text-slate-800 mb-1">Cek Status Pelanggan</h2>
             <p id="formInstruction" class="text-xs text-slate-500 mb-6">Masukkan Nomor Pelanggan dan Nomor WhatsApp terdaftar untuk menerima OTP.</p>
@@ -38,18 +38,18 @@
                 <!-- Field 1: Nomor Pelanggan -->
                 <div>
                     <label class="block text-xs font-semibold text-slate-600 mb-1">Nomor Pelanggan</label>
-                    <input type="text" id="inputNoPelanggan" placeholder="Contoh: 100200300" 
+                    <input type="text" id="inputNoPelanggan" placeholder="Contoh: 92728111028" 
                         class="w-full px-4 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600">
                 </div>
 
-                <!-- Field 2: Nomor WhatsApp / Kode OTP (Dinamis) -->
+                <!-- Field 2: Nomor WhatsApp / Kode OTP -->
                 <div>
                     <label id="labelWaOtp" class="block text-xs font-semibold text-slate-600 mb-1">Nomor WhatsApp Terdaftar</label>
-                    <input type="text" id="inputWaOtp" placeholder="Contoh: 081234567890" 
+                    <input type="text" id="inputWaOtp" placeholder="Contoh: 087796842024" 
                         class="w-full px-4 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600">
                 </div>
 
-                <!-- Tombol Aksi Dinamis -->
+                <!-- Tombol Aksi -->
                 <button id="btnAction" onclick="handleAuthAction()" 
                     class="w-full bg-blue-800 hover:bg-blue-900 text-white font-medium px-6 py-2.5 rounded-md transition-colors">
                     Kirim Kode OTP
@@ -112,7 +112,6 @@
         
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // State Variabel
         let isOtpSent = false;
         let currentGeneratedOTP = null;
         let currentPelangganData = null;
@@ -125,15 +124,25 @@
             }
         }
 
+        // Helper normalisasi nomor HP
+        function normalizePhone(phone) {
+            if (!phone) return '';
+            let cleaned = phone.replace(/\D/g, '');
+            if (cleaned.startsWith('62')) {
+                cleaned = '0' + cleaned.slice(2);
+            }
+            return cleaned;
+        }
+
         // Tahap 1: Validasi Pelanggan & Minta OTP
         async function prosesMintaOTP() {
             const noPelanggan = document.getElementById('inputNoPelanggan').value.trim();
-            const noWA = document.getElementById('inputWaOtp').value.trim();
+            const rawNoWA = document.getElementById('inputWaOtp').value.trim();
             const errorMessage = document.getElementById('errorMessage');
 
             errorMessage.classList.add('hidden');
 
-            if (!noPelanggan || !noWA) {
+            if (!noPelanggan || !rawNoWA) {
                 showError("Nomor Pelanggan dan Nomor WhatsApp wajib diisi.");
                 return;
             }
@@ -150,7 +159,11 @@
                 return;
             }
 
-            if (pelanggan.nomor_whatsapp !== noWA) {
+            // Cocokkan nomor WhatsApp yang di-normalisasi
+            const inputWaClean = normalizePhone(rawNoWA);
+            const dbWaClean = normalizePhone(pelanggan.nomor_whatsapp);
+
+            if (inputWaClean !== dbWaClean) {
                 showError("Nomor WhatsApp tidak cocok dengan data terdaftar.");
                 return;
             }
@@ -174,7 +187,7 @@
             fieldWaOtp.classList.add('text-center', 'font-bold', 'tracking-widest', 'text-lg');
 
             document.getElementById('labelWaOtp').innerText = 'Kode OTP WhatsApp';
-            document.getElementById('formInstruction').innerText = `Kode OTP telah dikirimkan ke nomor WA ${noWA}. Silakan masukkan kode pada kolom di bawah.`;
+            document.getElementById('formInstruction').innerText = `Kode OTP telah dikirimkan ke nomor WA ${rawNoWA}. Silakan masukkan kode pada kolom di bawah.`;
             
             const btnAction = document.getElementById('btnAction');
             btnAction.innerText = 'Verifikasi Kode OTP';
@@ -259,7 +272,7 @@
 
             const fieldWaOtp = document.getElementById('inputWaOtp');
             fieldWaOtp.value = '';
-            fieldWaOtp.placeholder = 'Contoh: 081234567890';
+            fieldWaOtp.placeholder = 'Contoh: 087796842024';
             fieldWaOtp.removeAttribute('maxlength');
             fieldWaOtp.classList.remove('text-center', 'font-bold', 'tracking-widest', 'text-lg');
 
