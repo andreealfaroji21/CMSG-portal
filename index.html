@@ -125,6 +125,7 @@
             return cleaned;
         }
 
+        // Tahap 1: Validasi Pelanggan & Kirim OTP WA via Fonnte
         async function prosesMintaOTP() {
             const noPelanggan = document.getElementById('inputNoPelanggan').value.replace(/\s+/g, '').trim();
             const rawNoWA = document.getElementById('inputWaOtp').value.replace(/\s+/g, '').trim();
@@ -137,7 +138,7 @@
                 return;
             }
 
-            // Query ke Supabase
+            // 1. Query Data ke Supabase
             const { data: pelanggan, error } = await supabaseClient
                 .from('pelanggan')
                 .select('*')
@@ -155,7 +156,7 @@
 
             const dataTarget = pelanggan[0];
 
-            // Validasi Nomor WA
+            // 2. Validasi Nomor WA Terdaftar
             const inputWaClean = normalizePhone(rawNoWA);
             const dbWaClean = normalizePhone(dataTarget.nomor_whatsapp);
 
@@ -164,11 +165,47 @@
                 return;
             }
 
+            // 3. Simpan Data & Buat Kode OTP 4 Digit
             currentPelangganData = dataTarget;
             currentGeneratedOTP = Math.floor(1000 + Math.random() * 9000).toString();
 
-            alert(`[SIMULASI OTP WA]\nKode OTP verifikasi Anda adalah: ${currentGeneratedOTP}`);
+            // 4. KIRIM OTP VIA FONNTE WA GATEWAY API
+            const FONNTE_TOKEN = "TOKEN_FONNTE_ANDA"; // Masukkan API Token dari Fonnte di sini
+            
+            const messageText = `*PT AETRA AIR TANGERANG*\n\nKode OTP Anda untuk mengakses Portal Informasi Aktivitas Kepelangganan adalah: *${currentGeneratedOTP}*\n\nJangan berikan kode ini kepada siapapun demi keamanan data Anda.`;
 
+            // Ubah tombol menjadi loading
+            const btnAction = document.getElementById('btnAction');
+            btnAction.innerText = 'Sending WA OTP...';
+            btnAction.disabled = true;
+
+            try {
+                const formData = new FormData();
+                formData.append('target', rawNoWA);
+                formData.append('message', messageText);
+
+                const response = await fetch('https://api.fonnte.com/send', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': FONNTE_TOKEN
+                    },
+                    body: formData
+                });
+
+                const resData = await response.json();
+
+                if (resData.status) {
+                    alert(`Kode OTP telah terkirim via WhatsApp ke nomor ${rawNoWA}`);
+                } else {
+                    console.warn("Fonnte Warning:", resData);
+                    alert(`[Simulasi Fallback] Gagal kirim WA (Cek Token/Kredit Fonnte). Kode OTP Anda: ${currentGeneratedOTP}`);
+                }
+            } catch (err) {
+                console.error("Fonnte Error:", err);
+                alert(`[Simulasi Fallback] Kode OTP Anda adalah: ${currentGeneratedOTP}`);
+            }
+
+            // 5. Ubah Tampilan Kolom Input Menjadi OTP
             isOtpSent = true;
             document.getElementById('inputNoPelanggan').disabled = true;
             document.getElementById('inputNoPelanggan').classList.add('bg-slate-100');
@@ -182,38 +219,11 @@
             document.getElementById('labelWaOtp').innerText = 'Kode OTP WhatsApp';
             document.getElementById('formInstruction').innerText = `Kode OTP telah dikirimkan ke nomor WA ${rawNoWA}. Silakan masukkan kode pada kolom di bawah.`;
             
-            const btnAction = document.getElementById('btnAction');
+            btnAction.disabled = false;
             btnAction.innerText = 'Verifikasi Kode OTP';
             btnAction.className = 'w-full bg-green-700 hover:bg-green-800 text-white font-medium px-6 py-2.5 rounded-md transition-colors';
             
             document.getElementById('btnResetOtp').classList.remove('hidden');
-        }
-
-        async function prosesVerifikasiOTP() {
-            const inputOTP = document.getElementById('inputWaOtp').value.trim();
-
-            if (inputOTP !== currentGeneratedOTP) {
-                showError("Kode OTP salah. Silakan periksa kembali.");
-                return;
-            }
-
-            const pelanggan = currentPelangganData;
-            document.getElementById('resNoPelanggan').innerText = pelanggan.nomor_pelanggan;
-            document.getElementById('resNama').innerText = pelanggan.nama_pelanggan;
-            document.getElementById('resAlamat').innerText = pelanggan.alamat;
-            document.getElementById('resStatus').innerText = pelanggan.status_tagihan_saat_ini;
-            document.getElementById('resTunggakan').innerText = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(pelanggan.total_tunggakan);
-
-            const { data: treatments } = await supabaseClient
-                .from('historis_treatment')
-                .select('*')
-                .eq('nomor_pelanggan', pelanggan.nomor_pelanggan)
-                .order('tanggal_treatment', { ascending: true });
-
-            renderTimeline(treatments || []);
-
-            document.getElementById('searchFormCard').classList.add('hidden');
-            document.getElementById('resultContainer').classList.remove('hidden');
         }
 
         function renderTimeline(treatments) {
