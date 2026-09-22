@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cek Status Tagihan & Treatment - PT Aetra Air Tangerang</title>
-    <!-- Tailwind CSS untuk Tampilan Modern -->
+    <title>Portal Informasi Tagihan & Treatment - PT Aetra Air Tangerang</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Supabase JS Library -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -22,25 +22,60 @@
 
     <!-- Main Content -->
     <main class="max-w-4xl mx-auto px-4 py-8">
-        <!-- Card Pencarian -->
-        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
-            <h2 class="text-lg font-semibold text-slate-800 mb-4">Cek Status Pelanggan</h2>
-            <div class="flex flex-col sm:flex-row gap-3">
-                <input type="text" id="inputNoPelanggan" placeholder="Masukkan Nomor Pelanggan (Contoh: 100200300)" 
-                    class="flex-grow px-4 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600">
-                <button onclick="cariDataPelanggan()" 
-                    class="bg-blue-800 hover:bg-blue-900 text-white font-medium px-6 py-2 rounded-md transition-colors">
-                    Cari Data
+        
+        <!-- STEP 1: Form Verifikasi Nomor Pelanggan & WhatsApp -->
+        <div id="step1Container" class="bg-white rounded-lg shadow-md p-6 mb-8 max-w-xl mx-auto">
+            <h2 class="text-lg font-semibold text-slate-800 mb-2">Verifikasi Pelanggan</h2>
+            <p class="text-sm text-slate-500 mb-6">Masukkan Nomor Pelanggan dan Nomor WhatsApp yang terdaftar untuk menerima kode OTP.</p>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Nomor Pelanggan</label>
+                    <input type="text" id="inputNoPelanggan" placeholder="Contoh: 100200300" 
+                        class="w-full px-4 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Nomor WhatsApp Terdaftar</label>
+                    <input type="text" id="inputNoWA" placeholder="Contoh: 081234567890" 
+                        class="w-full px-4 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600">
+                </div>
+                <button onclick="mintaOTP()" 
+                    class="w-full bg-blue-800 hover:bg-blue-900 text-white font-medium px-6 py-2.5 rounded-md transition-colors">
+                    Kirim Kode OTP
                 </button>
             </div>
-            <p id="errorText" class="text-red-500 text-sm mt-2 hidden"></p>
+            <p id="errorStep1" class="text-red-500 text-sm mt-3 hidden"></p>
         </div>
 
-        <!-- Hasil Pencarian -->
+        <!-- STEP 2: Form Verifikasi OTP -->
+        <div id="step2Container" class="bg-white rounded-lg shadow-md p-6 mb-8 max-w-xl mx-auto hidden">
+            <h2 class="text-lg font-semibold text-slate-800 mb-2">Masukkan Kode OTP</h2>
+            <p class="text-sm text-slate-500 mb-4">Kode OTP telah dikirimkan ke nomor WhatsApp <span id="displayNoWA" class="font-bold text-slate-700"></span>.</p>
+            
+            <div class="space-y-4">
+                <div>
+                    <input type="text" id="inputOTP" maxlength="4" placeholder="Masukkan 4 Digit Kode OTP" 
+                        class="w-full text-center tracking-widest text-xl font-bold px-4 py-3 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600">
+                </div>
+                <button onclick="verifikasiOTP()" 
+                    class="w-full bg-green-700 hover:bg-green-800 text-white font-medium px-6 py-2.5 rounded-md transition-colors">
+                    Verifikasi & Tampilkan Data
+                </button>
+                <button onclick="kembaliKeStep1()" class="w-full text-xs text-slate-500 hover:underline">
+                    Ubah Nomor Pelanggan / WhatsApp
+                </button>
+            </div>
+            <p id="errorStep2" class="text-red-500 text-sm mt-3 hidden"></p>
+        </div>
+
+        <!-- STEP 3: Hasil Informasi & Historis Treatment -->
         <div id="resultContainer" class="hidden space-y-6">
-            <!-- Information Card -->
+            <!-- Informasi Pelanggan -->
             <div class="bg-white rounded-lg shadow-md p-6">
-                <h3 class="text-md font-semibold text-slate-500 uppercase tracking-wide border-b pb-2 mb-4">Informasi Pelanggan</h3>
+                <div class="flex justify-between items-center border-b pb-2 mb-4">
+                    <h3 class="text-md font-semibold text-slate-500 uppercase tracking-wide">Informasi Pelanggan</h3>
+                    <button onclick="resetForm()" class="text-xs text-blue-700 hover:underline font-medium">Cari Pelanggan Lain</button>
+                </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <p class="text-xs text-slate-400">Nomor Pelanggan</p>
@@ -73,6 +108,7 @@
                 </div>
             </div>
         </div>
+
     </main>
 
     <script>
@@ -82,49 +118,92 @@
         
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        async function cariDataPelanggan() {
+        // State variabel sementara
+        let currentGeneratedOTP = null;
+        let currentPelangganData = null;
+
+        // Fungsi Meminta OTP
+        async function mintaOTP() {
             const noPelanggan = document.getElementById('inputNoPelanggan').value.trim();
-            const errorText = document.getElementById('errorText');
-            const resultContainer = document.getElementById('resultContainer');
+            const noWA = document.getElementById('inputNoWA').value.trim();
+            const errorStep1 = document.getElementById('errorStep1');
 
-            errorText.classList.add('hidden');
-            resultContainer.classList.add('hidden');
+            errorStep1.classList.add('hidden');
 
-            if (!noPelanggan) {
-                errorText.innerText = "Nomor pelanggan wajib diisi.";
-                errorText.classList.remove('hidden');
+            if (!noPelanggan || !noWA) {
+                errorStep1.innerText = "Nomor Pelanggan dan Nomor WhatsApp wajib diisi.";
+                errorStep1.classList.remove('hidden');
                 return;
             }
 
-            // Fetch Pelanggan
-            const { data: pelanggan, error: errPelanggan } = await supabaseClient
+            // Cari data di Supabase
+            const { data: pelanggan, error } = await supabaseClient
                 .from('pelanggan')
                 .select('*')
                 .eq('nomor_pelanggan', noPelanggan)
                 .single();
 
-            if (errPelanggan || !pelanggan) {
-                errorText.innerText = "Data pelanggan tidak ditemukan. Periksa kembali nomor yang dimasukkan.";
-                errorText.classList.remove('hidden');
+            if (error || !pelanggan) {
+                errorStep1.innerText = "Nomor Pelanggan tidak ditemukan dalam sistem.";
+                errorStep1.classList.remove('hidden');
                 return;
             }
 
-            // Populate Info Pelanggan
+            // Cocokkan nomor WhatsApp
+            if (pelanggan.nomor_whatsapp !== noWA) {
+                errorStep1.innerText = "Nomor WhatsApp tidak cocok dengan data terdaftar.";
+                errorStep1.classList.remove('hidden');
+                return;
+            }
+
+            // Simpan data sementara
+            currentPelangganData = pelanggan;
+
+            // Generate Kode OTP Random 4 Digit
+            currentGeneratedOTP = Math.floor(1000 + Math.random() * 9000).toString();
+
+            // Simulasi Pengiriman OTP (Pemberitahuan Layar)
+            alert(`[SIMULASI OTP WA]\nKode OTP untuk verifikasi pelanggan ${pelanggan.nama_pelanggan} adalah: ${currentGeneratedOTP}`);
+
+            // Pindah ke Step 2
+            document.getElementById('step1Container').classList.add('hidden');
+            document.getElementById('displayNoWA').innerText = noWA;
+            document.getElementById('step2Container').classList.remove('hidden');
+        }
+
+        // Fungsi Verifikasi OTP
+        async function verifikasiOTP() {
+            const inputOTP = document.getElementById('inputOTP').value.trim();
+            const errorStep2 = document.getElementById('errorStep2');
+
+            errorStep2.classList.add('hidden');
+
+            if (inputOTP !== currentGeneratedOTP) {
+                errorStep2.innerText = "Kode OTP salah. Silakan periksa kembali.";
+                errorStep2.classList.remove('hidden');
+                return;
+            }
+
+            // Tampilkan Data Pelanggan
+            const pelanggan = currentPelangganData;
             document.getElementById('resNoPelanggan').innerText = pelanggan.nomor_pelanggan;
             document.getElementById('resNama').innerText = pelanggan.nama_pelanggan;
             document.getElementById('resAlamat').innerText = pelanggan.alamat;
             document.getElementById('resStatus').innerText = pelanggan.status_tagihan_saat_ini;
             document.getElementById('resTunggakan').innerText = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(pelanggan.total_tunggakan);
 
-            // Fetch Historis Treatment
-            const { data: treatments, error: errTreatment } = await supabaseClient
+            // Fetch Historis Treatment dari Supabase
+            const { data: treatments } = await supabaseClient
                 .from('historis_treatment')
                 .select('*')
-                .eq('nomor_pelanggan', noPelanggan)
+                .eq('nomor_pelanggan', pelanggan.nomor_pelanggan)
                 .order('tanggal_treatment', { ascending: true });
 
             renderTimeline(treatments || []);
-            resultContainer.classList.remove('hidden');
+
+            // Pindah Tampilan ke Step 3 (Hasil)
+            document.getElementById('step2Container').classList.add('hidden');
+            document.getElementById('resultContainer').classList.remove('hidden');
         }
 
         function renderTimeline(treatments) {
@@ -153,6 +232,22 @@
                 `;
                 timeline.innerHTML += html;
             });
+        }
+
+        function kembaliKeStep1() {
+            document.getElementById('step2Container').classList.add('hidden');
+            document.getElementById('step1Container').classList.remove('hidden');
+            document.getElementById('inputOTP').value = '';
+        }
+
+        function resetForm() {
+            document.getElementById('resultContainer').classList.add('hidden');
+            document.getElementById('step1Container').classList.remove('hidden');
+            document.getElementById('inputNoPelanggan').value = '';
+            document.getElementById('inputNoWA').value = '';
+            document.getElementById('inputOTP').value = '';
+            currentGeneratedOTP = null;
+            currentPelangganData = null;
         }
     </script>
 </body>
