@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cek Status Tagihan & Treatment - PT Aetra Air Tangerang</title>
+    <!-- Tailwind CSS untuk Tampilan Modern -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Supabase JS Library -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="bg-slate-100 min-h-screen">
+    <!-- Header -->
+    <header class="bg-blue-900 text-white shadow-md">
+        <div class="max-w-4xl mx-auto px-4 py-6 flex items-center justify-between">
+            <div>
+                <h1 class="text-xl font-bold">PT AETRA AIR TANGERANG</h1>
+                <p class="text-sm text-blue-200">Divisi Collection - Portal Informasi Tagihan & Treatment</p>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-4xl mx-auto px-4 py-8">
+        <!-- Card Pencarian -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <h2 class="text-lg font-semibold text-slate-800 mb-4">Cek Status Pelanggan</h2>
+            <div class="flex flex-col sm:flex-row gap-3">
+                <input type="text" id="inputNoPelanggan" placeholder="Masukkan Nomor Pelanggan (Contoh: 100200300)" 
+                    class="flex-grow px-4 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600">
+                <button onclick="cariDataPelanggan()" 
+                    class="bg-blue-800 hover:bg-blue-900 text-white font-medium px-6 py-2 rounded-md transition-colors">
+                    Cari Data
+                </button>
+            </div>
+            <p id="errorText" class="text-red-500 text-sm mt-2 hidden"></p>
+        </div>
+
+        <!-- Hasil Pencarian -->
+        <div id="resultContainer" class="hidden space-y-6">
+            <!-- Information Card -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h3 class="text-md font-semibold text-slate-500 uppercase tracking-wide border-b pb-2 mb-4">Informasi Pelanggan</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <p class="text-xs text-slate-400">Nomor Pelanggan</p>
+                        <p id="resNoPelanggan" class="font-bold text-slate-800 text-lg">-</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-slate-400">Nama Pelanggan</p>
+                        <p id="resNama" class="font-bold text-slate-800 text-lg">-</p>
+                    </div>
+                    <div class="md:col-span-2">
+                        <p class="text-xs text-slate-400">Alamat</p>
+                        <p id="resAlamat" class="text-slate-700">-</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-slate-400">Status Tagihan</p>
+                        <span id="resStatus" class="inline-block mt-1 px-3 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">-</span>
+                    </div>
+                    <div>
+                        <p class="text-xs text-slate-400">Total Tunggakan</p>
+                        <p id="resTunggakan" class="font-bold text-red-600 text-lg">-</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Timeline Historis Treatment -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h3 class="text-md font-semibold text-slate-500 uppercase tracking-wide border-b pb-2 mb-6">Historis Treatment & Tindakan Field</h3>
+                <div id="timelineContainer" class="relative border-l-2 border-blue-200 ml-4 space-y-6">
+                    <!-- Item timeline akan dimasukkan via JavaScript -->
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // --- KONFIGURASI SUPABASE ---
+        const SUPABASE_URL = "https://wpjwoogpvmuguutwtuxj.supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indwandvb2dwdm11Z3V1dHd0dXhqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAwNDM3NDAsImV4cCI6MjEwNTYxOTc0MH0.iY7ekod54fU1Dtdw8_eeO65G_W6UVQJzCz8SgbfYaIQ";
+        
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        async function cariDataPelanggan() {
+            const noPelanggan = document.getElementById('inputNoPelanggan').value.trim();
+            const errorText = document.getElementById('errorText');
+            const resultContainer = document.getElementById('resultContainer');
+
+            errorText.classList.add('hidden');
+            resultContainer.classList.add('hidden');
+
+            if (!noPelanggan) {
+                errorText.innerText = "Nomor pelanggan wajib diisi.";
+                errorText.classList.remove('hidden');
+                return;
+            }
+
+            // Fetch Pelanggan
+            const { data: pelanggan, error: errPelanggan } = await supabaseClient
+                .from('pelanggan')
+                .select('*')
+                .eq('nomor_pelanggan', noPelanggan)
+                .single();
+
+            if (errPelanggan || !pelanggan) {
+                errorText.innerText = "Data pelanggan tidak ditemukan. Periksa kembali nomor yang dimasukkan.";
+                errorText.classList.remove('hidden');
+                return;
+            }
+
+            // Populate Info Pelanggan
+            document.getElementById('resNoPelanggan').innerText = pelanggan.nomor_pelanggan;
+            document.getElementById('resNama').innerText = pelanggan.nama_pelanggan;
+            document.getElementById('resAlamat').innerText = pelanggan.alamat;
+            document.getElementById('resStatus').innerText = pelanggan.status_tagihan_saat_ini;
+            document.getElementById('resTunggakan').innerText = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(pelanggan.total_tunggakan);
+
+            // Fetch Historis Treatment
+            const { data: treatments, error: errTreatment } = await supabaseClient
+                .from('historis_treatment')
+                .select('*')
+                .eq('nomor_pelanggan', noPelanggan)
+                .order('tanggal_treatment', { ascending: true });
+
+            renderTimeline(treatments || []);
+            resultContainer.classList.remove('hidden');
+        }
+
+        function renderTimeline(treatments) {
+            const timeline = document.getElementById('timelineContainer');
+            timeline.innerHTML = '';
+
+            if (treatments.length === 0) {
+                timeline.innerHTML = '<p class="pl-6 text-slate-500 italic">Belum ada catatan historis treatment untuk pelanggan ini.</p>';
+                return;
+            }
+
+            treatments.forEach(item => {
+                const dateFormatted = new Date(item.tanggal_treatment).toLocaleDateString('id-ID', {
+                    day: 'numeric', month: 'long', year: 'numeric'
+                });
+
+                const html = `
+                    <div class="mb-6 ml-6 relative">
+                        <span class="absolute -left-[31px] top-1 bg-blue-600 h-4 w-4 rounded-full border-2 border-white ring-4 ring-blue-100"></span>
+                        <div class="bg-slate-50 p-4 rounded-md border border-slate-200">
+                            <span class="text-xs font-semibold text-blue-600 uppercase tracking-wider">${dateFormatted}</span>
+                            <h4 class="text-md font-bold text-slate-800 mt-1">${item.jenis_treatment}</h4>
+                            <p class="text-sm text-slate-600 mt-2">${item.keterangan || '-'}</p>
+                        </div>
+                    </div>
+                `;
+                timeline.innerHTML += html;
+            });
+        }
+    </script>
+</body>
+</html>
