@@ -197,22 +197,22 @@
                 return;
             }
 
-            const { data: pelanggan, error } = await supabaseClient
-                .from('pelanggan')
-                .select('*')
-                .eq('nomor_pelanggan', noPelanggan);
+            // KODE BARU YANG SUDAH DIPERBAIKI
+const { data: dataTarget, error } = await supabaseClient
+    .from('pelanggan')
+    .select('*')
+    .eq('nomor_pelanggan', noPelanggan)
+    .maybeSingle(); // Menggunakan maybeSingle agar tidak crash jika data kosong
 
-            if (error) {
-                showError("Error Database: " + error.message);
-                return;
-            }
+if (error) {
+    showError("Error Database: " + error.message);
+    return;
+}
 
-            if (!pelanggan || pelanggan.length === 0) {
-                showError("Nomor Pelanggan tidak ditemukan dalam database.");
-                return;
-            }
-
-            const dataTarget = pelanggan[0];
+if (!dataTarget) {
+    showError("Nomor Pelanggan tidak ditemukan dalam database.");
+    return;
+}
 
             const inputWaClean = normalizePhone(rawNoWA);
             const dbWaClean = normalizePhone(dataTarget.nomor_whatsapp);
