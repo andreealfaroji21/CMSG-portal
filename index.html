@@ -4,18 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Portal Informasi Aktivitas Kepelangganan - PT Aetra Air Tangerang</title>
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Supabase JS Library -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="bg-slate-100 min-h-screen">
-    <!-- Header Utama -->
     <header class="bg-blue-900 text-white shadow-md sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
             <div class="flex items-center space-x-4">
                 <div class="bg-white p-1.5 rounded-lg shadow-sm flex items-center justify-center">
-                    <img src="Logo Aetra Air Tangerang.jpg" alt="Logo PT Aetra Air Tangerang" class="h-10 w-auto object-contain" onerror="this.onerror=null; this.src='https://i.ibb.co/L9vL93Z/Logo-Aetra-Air-Tangerang.jpg';">
+                    <img src="assets/images/logo.jpg" alt="Logo PT Aetra Air Tangerang" class="h-10 w-auto object-contain" onerror="this.onerror=null; this.src='https://i.ibb.co/L9vL93Z/Logo-Aetra-Air-Tangerang.jpg';">
                 </div>
                 <div>
                     <h1 class="text-lg md:text-xl font-bold tracking-wide">PT AETRA AIR TANGERANG</h1>
@@ -28,7 +25,6 @@
         </div>
     </header>
 
-    <!-- Halaman Form Verifikasi (Tampilan Awal) -->
     <main id="authContainer" class="max-w-4xl mx-auto px-4 py-12">
         <div id="searchFormCard" class="bg-white rounded-lg shadow-md p-6 max-w-xl mx-auto border border-slate-200">
             <h2 class="text-lg font-semibold text-slate-800 mb-1">Cek Status Pelanggan</h2>
@@ -60,11 +56,8 @@
         </div>
     </main>
 
-    <!-- DASHBOARD PANEL LAYOUT (Halaman Setelah Verifikasi OTP) -->
     <div id="dashboardContainer" class="hidden max-w-7xl mx-auto px-4 py-8">
         <div class="flex flex-col md:flex-row gap-6">
-            
-            <!-- PANEL SIDEBAR DISI KIRI -->
             <aside class="w-full md:w-1/4 bg-white rounded-lg shadow-md p-4 h-fit border border-slate-200">
                 <div class="mb-4 pb-3 border-b border-slate-100">
                     <p class="text-xs text-slate-400">Login Sebagai:</p>
@@ -88,10 +81,7 @@
                 </nav>
             </aside>
 
-            <!-- PANEL KONTEN UTAMA DI SISI KANAN -->
             <section class="flex-grow w-full md:w-3/4 space-y-6">
-                
-                <!-- OPSI 1: PANEL DATA PELANGGAN -->
                 <div id="panel1" class="bg-white rounded-lg shadow-md p-6 border border-slate-200">
                     <h3 class="text-md font-bold text-slate-800 uppercase tracking-wide border-b pb-3 mb-4 flex items-center gap-2">
                         <span>👤</span> Data Profil Pelanggan
@@ -120,7 +110,6 @@
                     </div>
                 </div>
 
-                <!-- OPSI 2: PANEL HISTORI PEMBAYARAN -->
                 <div id="panel2" class="hidden bg-white rounded-lg shadow-md p-6 border border-slate-200">
                     <h3 class="text-md font-bold text-slate-800 uppercase tracking-wide border-b pb-3 mb-4 flex items-center gap-2">
                         <span>💳</span> Catatan Histori Pembayaran
@@ -136,16 +125,12 @@
                                     <th class="px-4 py-3">No. Resi</th>
                                 </tr>
                             </thead>
-                            <tbody id="paymentTableBody">
-                                <!-- Data pembayaran diisi via JavaScript -->
-                            </tbody>
+                            <tbody id="paymentTableBody"></tbody>
                         </table>
                     </div>
                 </div>
 
-                <!-- OPSI 3: PANEL TUNGGAKAN SAAT INI & TREATMENT -->
                 <div id="panel3" class="hidden space-y-6">
-                    <!-- Ringkasan Tunggakan -->
                     <div class="bg-white rounded-lg shadow-md p-6 border border-slate-200">
                         <h3 class="text-md font-bold text-slate-800 uppercase tracking-wide border-b pb-3 mb-4 flex items-center gap-2">
                             <span>⚠️</span> Status Tunggakan Tagihan Saat Ini
@@ -162,25 +147,20 @@
                         </div>
                     </div>
 
-                    <!-- Historis Treatment Berjalan -->
                     <div class="bg-white rounded-lg shadow-md p-6 border border-slate-200">
-                        <h3 class="text-md font-bold text-slate-800 uppercase tracking-wide border-b pb-3 mb-6">
+                        <h3 class="text-md font-bold text-slate-800 uppercase tracking-wide border-b pb-2 mb-6">
                             Historis Treatment & Tindakan Petugas Field
                         </h3>
-                        <div id="timelineContainer" class="relative border-l-2 border-blue-200 ml-4 space-y-6">
-                            <!-- Timeline Treatment diisi via JavaScript -->
-                        </div>
+                        <div id="timelineContainer" class="relative border-l-2 border-blue-200 ml-4 space-y-6"></div>
                     </div>
                 </div>
-
             </section>
         </div>
     </div>
 
     <script>
-        // --- KONFIGURASI SUPABASE ---
-        const SUPABASE_URL = "https://wpjwoogpvmuguutwtuxj.supabase.co";
-        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indwandvb2dwdm11Z3V1dHd0dXhqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAwNDM3NDAsImV4cCI6MjEwNTYxOTc0MH0.iY7ekod54fU1Dtdw8_eeO65G_W6UVQJzCz8SgbfYaIQ";
+        const SUPABASE_URL = "URL_SUPABASE_ANDA";
+        const SUPABASE_ANON_KEY = "ANON_KEY_SUPABASE_ANDA";
         
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -278,7 +258,6 @@
             try {
                 const pelanggan = currentPelangganData;
 
-                // Set Info Sidebar & Data Pelanggan
                 document.getElementById('sidebarNama').innerText = pelanggan.nama_pelanggan;
                 document.getElementById('sidebarNoPel').innerText = "No: " + pelanggan.nomor_pelanggan;
                 
@@ -288,11 +267,9 @@
                 document.getElementById('resNomorMeter').innerText = pelanggan.nomor_meter || '-';
                 document.getElementById('resNoWa').innerText = pelanggan.nomor_whatsapp || '-';
 
-                // Set Panel 3 (Tunggakan & Treatment)
                 document.getElementById('resStatus').innerText = pelanggan.status_tagihan_saat_ini;
                 document.getElementById('resTunggakan').innerText = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(pelanggan.total_tunggakan);
 
-                // Fetch Data Histori Pembayaran
                 const { data: payments } = await supabaseClient
                     .from('histori_pembayaran')
                     .select('*')
@@ -301,7 +278,6 @@
 
                 renderPayments(payments || []);
 
-                // Fetch Data Treatment
                 const { data: treatments } = await supabaseClient
                     .from('historis_treatment')
                     .select('*')
@@ -310,7 +286,6 @@
 
                 renderTimeline(treatments || []);
 
-                // Tampilkan Dashboard
                 document.getElementById('authContainer').classList.add('hidden');
                 document.getElementById('dashboardContainer').classList.remove('hidden');
                 document.getElementById('btnLogout').classList.remove('hidden');
@@ -320,14 +295,11 @@
             }
         }
 
-        // Navigasi Antar Menu Panel Sidebar
         function switchPanel(panelNumber) {
-            // Hide all panels
             document.getElementById('panel1').classList.add('hidden');
             document.getElementById('panel2').classList.add('hidden');
             document.getElementById('panel3').classList.add('hidden');
 
-            // Reset menu styles
             const btn1 = document.getElementById('btnMenu1');
             const btn2 = document.getElementById('btnMenu2');
             const btn3 = document.getElementById('btnMenu3');
@@ -336,7 +308,6 @@
                 btn.className = "w-full text-left px-4 py-3 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100 flex items-center gap-3 transition-colors";
             });
 
-            // Show selected panel & highlight menu
             document.getElementById(`panel${panelNumber}`).classList.remove('hidden');
             document.getElementById(`btnMenu${panelNumber}`).className = "w-full text-left px-4 py-3 rounded-lg text-sm font-semibold flex items-center gap-3 transition-colors bg-blue-800 text-white shadow-sm";
         }
