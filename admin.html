@@ -3,86 +3,168 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Collection - PT Aetra Air Tangerang</title>
+    <title>Panel Admin Collection - PT Aetra Air Tangerang</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Supabase JS Library -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-<body class="bg-slate-100 min-h-screen">
+<body class="bg-slate-100 min-h-screen text-slate-800">
 
-    <!-- Header Admin -->
-    <header class="bg-slate-900 text-white shadow-md">
-        <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+    <!-- Header Utama -->
+    <header class="bg-blue-950 text-white shadow-lg sticky top-0 z-50 border-b border-blue-800">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
             <div class="flex items-center space-x-3">
                 <div class="bg-white p-1.5 rounded-lg shadow-sm">
-                    <img src="Logo Aetra Air Tangerang.jpg" alt="Logo PT Aetra Air Tangerang" class="h-8 w-auto object-contain" onerror="this.onerror=null; this.src='https://i.ibb.co/L9vL93Z/Logo-Aetra-Air-Tangerang.jpg';">
+                    <img src="Logo Aetra Air Tangerang.jpg" alt="Logo PT Aetra Air Tangerang" class="h-9 w-auto object-contain" onerror="this.onerror=null; this.src='https://i.ibb.co/L9vL93Z/Logo-Aetra-Air-Tangerang.jpg';">
                 </div>
                 <div>
-                    <h1 class="text-lg font-bold tracking-wide">PANEL ADMIN COLLECTION</h1>
-                    <p class="text-xs text-slate-400">Monitoring & Update Status Treatment Pelanggan</p>
+                    <h1 class="text-base md:text-lg font-bold tracking-wide">PANEL ADMIN COLLECTION</h1>
+                    <p class="text-xs text-blue-200">Monitoring & Update Status Aktivitas Kepelangganan</p>
                 </div>
             </div>
-            <button id="btnLogoutAdmin" onclick="logoutAdmin()" class="hidden text-xs bg-red-600 hover:bg-red-700 text-white font-medium px-4 py-2 rounded-md transition-colors">
-                Keluar Panel
-            </button>
+            
+            <div id="adminUserBadge" class="hidden flex items-center gap-3">
+                <div class="text-right hidden sm:block">
+                    <p id="badgeNamaPetugas" class="text-xs font-bold text-white"></p>
+                    <p class="text-[10px] text-green-400 font-medium">● Petugas Aktif</p>
+                </div>
+                <button onclick="logoutAdmin()" class="text-xs bg-red-600 hover:bg-red-700 text-white font-semibold px-3 py-1.5 rounded-md transition shadow">
+                    Keluar
+                </button>
+            </div>
         </div>
     </header>
 
-    <!-- FORM LOGIN ADMIN -->
-    <main id="loginAdminCard" class="max-w-md mx-auto px-4 py-16">
-        <div class="bg-white rounded-lg shadow-md p-6 border border-slate-200">
-            <h2 class="text-lg font-bold text-slate-800 mb-2">Masuk Admin Collection</h2>
-            <p class="text-xs text-slate-500 mb-6">Masukkan PIN keamanan petugas internal untuk membuka panel kontrol.</p>
+    <!-- 1. MODAL / FORM LOGIN ADMIN -->
+    <main id="loginAdminSection" class="max-w-md mx-auto px-4 py-16">
+        <div class="bg-white rounded-xl shadow-xl p-8 border border-slate-200">
+            <div class="text-center mb-6">
+                <div class="inline-block p-3 bg-blue-50 rounded-full mb-2">
+                    <span class="text-3xl">🛡️</span>
+                </div>
+                <h2 class="text-xl font-bold text-slate-900">Autentikasi Internal</h2>
+                <p class="text-xs text-slate-500 mt-1">Masukkan nama petugas dan PIN keamanan untuk mengelola data aktivitas kepelangganan.</p>
+            </div>
 
             <div class="space-y-4">
                 <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">PIN Akses Admin</label>
-                    <input type="password" id="inputPinAdmin" placeholder="Masukkan PIN Admin" 
-                        class="w-full px-4 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-800">
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Nama Petugas Admin</label>
+                    <input type="text" id="inputNamaPetugas" placeholder="Contoh: Andree Alfaroji" 
+                        class="w-full px-4 py-2.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-600">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">PIN Keamanan Admin</label>
+                    <input type="password" id="inputPinAdmin" placeholder="Masukkan PIN 6-digit" 
+                        class="w-full px-4 py-2.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-600">
                 </div>
                 <button onclick="loginAdmin()" 
-                    class="w-full bg-slate-800 hover:bg-slate-900 text-white font-medium px-6 py-2.5 rounded-md transition-colors">
+                    class="w-full bg-blue-900 hover:bg-blue-950 text-white font-semibold px-6 py-2.5 rounded-lg transition shadow-md">
                     Masuk Panel Admin
                 </button>
             </div>
-            <p id="errorLogin" class="text-red-500 text-xs mt-3 hidden"></p>
+            <p id="errorLogin" class="text-red-500 text-xs mt-3 text-center font-medium hidden"></p>
         </div>
     </main>
 
-    <!-- DASHBOARD KONTROL ADMIN -->
-    <main id="dashboardAdmin" class="hidden max-w-7xl mx-auto px-4 py-8 space-y-6">
+    <!-- 2. DASHBOARD INTERAKTIF ADMIN -->
+    <main id="dashboardAdminSection" class="hidden max-w-7xl mx-auto px-4 py-8 space-y-8">
         
-        <!-- CARI PELANGGAN -->
-        <div class="bg-white rounded-lg shadow-md p-6 border border-slate-200">
-            <h3 class="text-md font-bold text-slate-800 uppercase tracking-wide mb-4">Pilih Pelanggan Yang Akan Diperbarui</h3>
-            <div class="flex flex-col sm:flex-row gap-3">
-                <input type="text" id="adminSearchNoPel" placeholder="Masukkan Nomor Pelanggan (Contoh: 92728111029)" 
-                    class="flex-grow px-4 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600">
-                <button onclick="cariPelangganAdmin()" 
-                    class="bg-blue-800 hover:bg-blue-900 text-white font-medium px-6 py-2 rounded-md transition-colors">
-                    Cari Data
-                </button>
+        <!-- CARDS RINGKASAN KPIS -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex items-center justify-between">
+                <div>
+                    <p class="text-xs text-slate-400 font-medium uppercase">Total Pelanggan</p>
+                    <h3 id="statTotalPelanggan" class="text-2xl font-black text-slate-800 mt-1">0</h3>
+                </div>
+                <div class="p-3 bg-blue-50 text-blue-600 rounded-lg text-2xl">👥</div>
             </div>
-            <p id="adminSearchError" class="text-red-500 text-xs mt-2 hidden"></p>
+
+            <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex items-center justify-between">
+                <div>
+                    <p class="text-xs text-slate-400 font-medium uppercase">Pelanggan Menunggak</p>
+                    <h3 id="statPelangganTunggak" class="text-2xl font-black text-amber-600 mt-1">0</h3>
+                </div>
+                <div class="p-3 bg-amber-50 text-amber-600 rounded-lg text-2xl">⚠️</div>
+            </div>
+
+            <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex items-center justify-between">
+                <div>
+                    <p class="text-xs text-slate-400 font-medium uppercase">Tindakan Segel/Putus</p>
+                    <h3 id="statSegelPutus" class="text-2xl font-black text-red-600 mt-1">0</h3>
+                </div>
+                <div class="p-3 bg-red-50 text-red-600 rounded-lg text-2xl">🚫</div>
+            </div>
+
+            <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex items-center justify-between">
+                <div>
+                    <p class="text-xs text-slate-400 font-medium uppercase">Total Tunggakan</p>
+                    <h3 id="statTotalTunggakan" class="text-lg font-black text-red-700 mt-1">Rp 0</h3>
+                </div>
+                <div class="p-3 bg-emerald-50 text-emerald-600 rounded-lg text-2xl">💰</div>
+            </div>
         </div>
 
-        <!-- FORM EDITOR DATA & TREATMENT (Tampil Setelah Pelanggan Ditemukan) -->
-        <div id="editorContainer" class="hidden grid grid-cols-1 md:grid-cols-2 gap-6">
-            
-            <!-- PANEL UPDATE STATUS TAGIHAN -->
-            <div class="bg-white rounded-lg shadow-md p-6 border border-slate-200">
-                <h3 class="text-md font-bold text-slate-800 uppercase tracking-wide border-b pb-3 mb-4">Update Status Tagihan Pelanggan</h3>
-                
-                <div class="space-y-4">
-                    <div>
-                        <p class="text-xs text-slate-400">Nama Pelanggan / No. Sambungan</p>
-                        <p id="editNamaPelanggan" class="font-bold text-slate-800 text-md">-</p>
-                    </div>
+        <!-- TABEL MONITORING MASTER PELANGGAN -->
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                <div>
+                    <h3 class="text-base font-bold text-slate-900">Monitoring Aktivitas Kepelangganan</h3>
+                    <p class="text-xs text-slate-500">Pilih pelanggan dari tabel untuk memperbarui status atau menambah historis treatment.</p>
+                </div>
+                <!-- Filter & Cari -->
+                <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                    <input type="text" id="filterSearchTable" onkeyup="filterMasterTable()" placeholder="Cari nama / no pelanggan..." 
+                        class="px-3 py-1.5 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-blue-600">
+                    <select id="filterStatusTable" onchange="filterMasterTable()" class="px-3 py-1.5 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-blue-600">
+                        <option value="">Semua Status</option>
+                        <option value="Lunas">Lunas</option>
+                        <option value="Surat Peringatan 1 (SP1)">SP1</option>
+                        <option value="Surat Peringatan 2 (SP2)">SP2</option>
+                        <option value="Penyegelan Meter">Segel Meter</option>
+                        <option value="Pemutusan Sementara">Pemutusan Sementara</option>
+                        <option value="Pemutusan Permanen">Pemutusan Permanen</option>
+                    </select>
+                </div>
+            </div>
 
+            <div class="overflow-x-auto">
+                <table class="w-full text-xs text-left text-slate-600">
+                    <thead class="text-[11px] text-slate-500 uppercase bg-slate-50 border-b">
+                        <tr>
+                            <th class="px-4 py-3">No. Pelanggan</th>
+                            <th class="px-4 py-3">Nama Pelanggan</th>
+                            <th class="px-4 py-3">WhatsApp</th>
+                            <th class="px-4 py-3">Status Tagihan</th>
+                            <th class="px-4 py-3">Total Tunggakan</th>
+                            <th class="px-4 py-3 text-center">Aksi Monitoring</th>
+                        </tr>
+                    </thead>
+                    <tbody id="masterPelangganTableBody">
+                        <!-- Diisi via JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- PANEL EDITOR STATUS & TREATMENT (Akan Muncul Saat Klik Kelola di Tabel) -->
+        <div id="editorPanelSection" class="hidden bg-slate-50 rounded-xl p-6 border-2 border-blue-200 space-y-6">
+            <div class="flex justify-between items-center border-b pb-3">
+                <div>
+                    <span class="text-[10px] bg-blue-100 text-blue-800 font-bold px-2 py-0.5 rounded uppercase">Mode Update Data</span>
+                    <h3 id="editorTitleNama" class="text-lg font-bold text-slate-900 mt-1">-</h3>
+                </div>
+                <button onclick="tutupEditorPanel()" class="text-xs text-slate-500 hover:text-slate-800 font-bold">✕ Tutup Editor</button>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- FORM UPDATE STATUS TAGIHAN -->
+                <div class="bg-white p-5 rounded-lg shadow-sm border border-slate-200 space-y-4">
+                    <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider border-b pb-2">1. Update Status & Tunggakan</h4>
+                    
                     <div>
                         <label class="block text-xs font-semibold text-slate-600 mb-1">Status Tagihan Saat Ini</label>
-                        <select id="editStatusTagihan" class="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:ring-2 focus:ring-blue-600">
+                        <select id="editStatusTagihan" class="w-full px-3 py-2 border border-slate-300 rounded-md text-xs focus:ring-2 focus:ring-blue-600">
                             <option value="Lunas">Lunas</option>
                             <option value="Surat Peringatan 1 (SP1)">Surat Peringatan 1 (SP1)</option>
                             <option value="Surat Peringatan 2 (SP2)">Surat Peringatan 2 (SP2)</option>
@@ -94,28 +176,26 @@
 
                     <div>
                         <label class="block text-xs font-semibold text-slate-600 mb-1">Total Tunggakan (Rp)</label>
-                        <input type="number" id="editTotalTunggakan" class="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:ring-2 focus:ring-blue-600">
+                        <input type="number" id="editTotalTunggakan" class="w-full px-3 py-2 border border-slate-300 rounded-md text-xs focus:ring-2 focus:ring-blue-600">
                     </div>
 
-                    <button onclick="simpanUpdateStatus()" class="w-full bg-green-700 hover:bg-green-800 text-white font-medium px-4 py-2 rounded-md text-sm transition-colors">
+                    <button onclick="simpanUpdateStatus()" class="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-semibold px-4 py-2 rounded-md text-xs transition shadow">
                         Simpan Perubahan Status
                     </button>
                 </div>
-            </div>
 
-            <!-- PANEL INPUT TREATMENT BARU -->
-            <div class="bg-white rounded-lg shadow-md p-6 border border-slate-200">
-                <h3 class="text-md font-bold text-slate-800 uppercase tracking-wide border-b pb-3 mb-4">Input Treatment Field Baru</h3>
-                
-                <div class="space-y-4">
+                <!-- FORM INPUT TREATMENT BARU -->
+                <div class="bg-white p-5 rounded-lg shadow-sm border border-slate-200 space-y-4">
+                    <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider border-b pb-2">2. Tambah Catatan Treatment Field</h4>
+                    
                     <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Tanggal Eksekusi Treatment</label>
-                        <input type="date" id="inputTanggalTreatment" class="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:ring-2 focus:ring-blue-600">
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Tanggal Tindakan</label>
+                        <input type="date" id="inputTanggalTreatment" class="w-full px-3 py-2 border border-slate-300 rounded-md text-xs focus:ring-2 focus:ring-blue-600">
                     </div>
 
                     <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Jenis Action / Treatment</label>
-                        <select id="inputJenisTreatment" class="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:ring-2 focus:ring-blue-600">
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Jenis Treatment / Tindakan</label>
+                        <select id="inputJenisTreatment" class="w-full px-3 py-2 border border-slate-300 rounded-md text-xs focus:ring-2 focus:ring-blue-600">
                             <option value="Surat Peringatan 1 (SP1)">Surat Peringatan 1 (SP1)</option>
                             <option value="Surat Peringatan 2 (SP2)">Surat Peringatan 2 (SP2)</option>
                             <option value="Penyegelan Meter (Segel)">Penyegelan Meter (Segel)</option>
@@ -127,106 +207,174 @@
 
                     <div>
                         <label class="block text-xs font-semibold text-slate-600 mb-1">Keterangan Petugas Field</label>
-                        <textarea id="inputKetTreatment" rows="3" placeholder="Catatan petugas atau nomor surat resmi..." class="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:ring-2 focus:ring-blue-600"></textarea>
+                        <textarea id="inputKetTreatment" rows="2" placeholder="Catatan nomor surat atau kondisi lapangan..." class="w-full px-3 py-2 border border-slate-300 rounded-md text-xs focus:ring-2 focus:ring-blue-600"></textarea>
                     </div>
 
-                    <button onclick="tambahTreatmentBaru()" class="w-full bg-blue-800 hover:bg-blue-900 text-white font-medium px-4 py-2 rounded-md text-sm transition-colors">
-                        + Tambah Treatment Ke Historis
+                    <button onclick="tambahTreatmentBaru()" class="w-full bg-blue-900 hover:bg-blue-950 text-white font-semibold px-4 py-2 rounded-md text-xs transition shadow">
+                        + Tambah Treatment Baru
                     </button>
                 </div>
-            </div>
 
-            <!-- TABEL HISTORIS TREATMENT SAAT INI (FULL WIDTH) -->
-            <div class="md:col-span-2 bg-white rounded-lg shadow-md p-6 border border-slate-200">
-                <h3 class="text-md font-bold text-slate-800 uppercase tracking-wide border-b pb-3 mb-4">Daftar Historis Treatment Terdaftar</h3>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-sm text-left text-slate-600">
-                        <thead class="text-xs text-slate-700 uppercase bg-slate-100 border-b">
-                            <tr>
-                                <th class="px-4 py-3">Tanggal</th>
-                                <th class="px-4 py-3">Jenis Treatment</th>
-                                <th class="px-4 py-3">Keterangan</th>
-                                <th class="px-4 py-3 text-center">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody id="adminTreatmentTableBody">
-                            <!-- Diisi via JS -->
-                        </tbody>
-                    </table>
+                <!-- TABEL LOG TREATMENT PELANGGAN TERPILIH -->
+                <div class="lg:col-span-2 bg-white p-5 rounded-lg shadow-sm border border-slate-200">
+                    <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider border-b pb-3 mb-3">Histori Treatment Terdaftar Pelanggan Ini</h4>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-xs text-left text-slate-600">
+                            <thead class="text-[10px] text-slate-500 uppercase bg-slate-100 border-b">
+                                <tr>
+                                    <th class="px-3 py-2">Tanggal</th>
+                                    <th class="px-3 py-2">Jenis Treatment</th>
+                                    <th class="px-3 py-2">Keterangan</th>
+                                    <th class="px-3 py-2 text-center">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adminTreatmentLogBody">
+                                <!-- Diisi via JS -->
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
-
         </div>
 
     </main>
 
     <script>
         // --- KONFIGURASI SUPABASE & ADMIN PIN ---
-        const SUPABASE_URL = "URL_SUPABASE_ANDA";
-        const SUPABASE_ANON_KEY = "ANON_KEY_SUPABASE_ANDA";
-        const ADMIN_PIN_RAHASIA = "123456"; // PIN Akses Admin Internal
+        const SUPABASE_URL = "https://wpjwoogpvmuguutwtuxj.supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indwandvb2dwdm11Z3V1dHd0dXhqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAwNDM3NDAsImV4cCI6MjEwNTYxOTc0MH0.iY7ekod54fU1Dtdw8_eeO65G_W6UVQJzCz8SgbfYaIQ";
+        const ADMIN_PIN_RAHASIA = "123456"; // PIN Admin Internal
 
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        let allPelangganList = [];
         let selectedPelangganAdmin = null;
 
         function loginAdmin() {
+            const nama = document.getElementById('inputNamaPetugas').value.trim();
             const pin = document.getElementById('inputPinAdmin').value.trim();
             const err = document.getElementById('errorLogin');
 
+            if (!nama) {
+                err.innerText = "Masukkan Nama Petugas Admin.";
+                err.classList.remove('hidden');
+                return;
+            }
+
             if (pin === ADMIN_PIN_RAHASIA) {
-                document.getElementById('loginAdminCard').classList.add('hidden');
-                document.getElementById('dashboardAdmin').classList.remove('hidden');
-                document.getElementById('btnLogoutAdmin').classList.remove('hidden');
+                document.getElementById('badgeNamaPetugas').innerText = nama;
+                document.getElementById('loginAdminSection').classList.add('hidden');
+                document.getElementById('dashboardAdminSection').classList.remove('hidden');
+                document.getElementById('adminUserBadge').classList.remove('hidden');
                 err.classList.add('hidden');
+                
+                // Load Master Data
+                loadMasterData();
             } else {
-                err.innerText = "PIN Admin Salah. Akses Ditolak.";
+                err.innerText = "PIN Keamanan Admin Salah.";
                 err.classList.remove('hidden');
             }
         }
 
         function logoutAdmin() {
-            document.getElementById('dashboardAdmin').classList.add('hidden');
-            document.getElementById('btnLogoutAdmin').classList.add('hidden');
-            document.getElementById('loginAdminCard').classList.remove('hidden');
+            document.getElementById('dashboardAdminSection').classList.add('hidden');
+            document.getElementById('adminUserBadge').classList.add('hidden');
+            document.getElementById('loginAdminSection').classList.remove('hidden');
+            document.getElementById('inputNamaPetugas').value = '';
             document.getElementById('inputPinAdmin').value = '';
-            document.getElementById('editorContainer').classList.add('hidden');
+            tutupEditorPanel();
         }
 
-        async function cariPelangganAdmin() {
-            const noPel = document.getElementById('adminSearchNoPel').value.replace(/\s+/g, '').trim();
-            const err = document.getElementById('adminSearchError');
-            err.classList.add('hidden');
-
-            if (!noPel) {
-                err.innerText = "Nomor Pelanggan tidak boleh kosong.";
-                err.classList.remove('hidden');
-                return;
-            }
-
-            const { data: pelanggan, error } = await supabaseClient
+        async function loadMasterData() {
+            const { data: pelangganList, error } = await supabaseClient
                 .from('pelanggan')
                 .select('*')
-                .eq('nomor_pelanggan', noPel)
-                .maybeSingle();
+                .order('nomor_pelanggan', { ascending: true });
 
-            if (error || !pelanggan) {
-                err.innerText = "Data Pelanggan tidak ditemukan.";
-                err.classList.remove('hidden');
-                document.getElementById('editorContainer').classList.add('hidden');
+            if (error) {
+                alert("Gagal memuat data master: " + error.message);
                 return;
             }
 
-            selectedPelangganAdmin = pelanggan;
+            allPelangganList = pelangganList || [];
+            updateKPIs(allPelangganList);
+            renderMasterTable(allPelangganList);
+        }
 
-            // Populate Editor
-            document.getElementById('editNamaPelanggan').innerText = `${pelanggan.nama_pelanggan} (${pelanggan.nomor_pelanggan})`;
+        function updateKPIs(data) {
+            const total = data.length;
+            const tunggak = data.filter(p => p.total_tunggakan > 0).length;
+            const segelPutus = data.filter(p => p.status_tagihan_saat_ini.includes('Segel') || p.status_tagihan_saat_ini.includes('Pemutusan')).length;
+            const totalRp = data.reduce((sum, p) => sum + Number(p.total_tunggakan || 0), 0);
+
+            document.getElementById('statTotalPelanggan').innerText = total;
+            document.getElementById('statPelangganTunggak').innerText = tunggak;
+            document.getElementById('statSegelPutus').innerText = segelPutus;
+            document.getElementById('statTotalTunggakan').innerText = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(totalRp);
+        }
+
+        function renderMasterTable(data) {
+            const tbody = document.getElementById('masterPelangganTableBody');
+            tbody.innerHTML = '';
+
+            if (data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="px-4 py-4 text-center text-slate-400 italic">Tidak ada data pelanggan.</td></tr>';
+                return;
+            }
+
+            data.forEach(p => {
+                let statusBadge = "bg-green-100 text-green-800";
+                if (p.status_tagihan_saat_ini.includes('SP')) statusBadge = "bg-amber-100 text-amber-800";
+                if (p.status_tagihan_saat_ini.includes('Segel') || p.status_tagihan_saat_ini.includes('Pemutusan')) statusBadge = "bg-red-100 text-red-800";
+
+                const tunggakanFmt = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(p.total_tunggakan);
+
+                const html = `
+                    <tr class="border-b hover:bg-slate-50 transition">
+                        <td class="px-4 py-3 font-bold text-blue-900">${p.nomor_pelanggan}</td>
+                        <td class="px-4 py-3 font-semibold text-slate-800">${p.nama_pelanggan}</td>
+                        <td class="px-4 py-3 font-mono text-slate-500">${p.nomor_whatsapp || '-'}</td>
+                        <td class="px-4 py-3"><span class="px-2.5 py-0.5 rounded-full font-bold text-[10px] ${statusBadge}">${p.status_tagihan_saat_ini}</span></td>
+                        <td class="px-4 py-3 font-bold ${p.total_tunggakan > 0 ? 'text-red-600' : 'text-slate-500'}">${tunggakanFmt}</td>
+                        <td class="px-4 py-3 text-center">
+                            <button onclick='pilihPelangganForEdit(${JSON.stringify(p)})' class="bg-blue-800 hover:bg-blue-900 text-white font-medium px-3 py-1 rounded text-[11px] transition shadow-sm">
+                                Kelola Activity
+                            </button>
+                        </td>
+                    </tr>
+                `;
+                tbody.innerHTML += html;
+            });
+        }
+
+        function filterMasterTable() {
+            const keyword = document.getElementById('filterSearchTable').value.toLowerCase();
+            const status = document.getElementById('filterStatusTable').value;
+
+            const filtered = allPelangganList.filter(p => {
+                const matchKeyword = p.nama_pelanggan.toLowerCase().includes(keyword) || p.nomor_pelanggan.includes(keyword);
+                const matchStatus = status === "" || p.status_tagihan_saat_ini === status;
+                return matchKeyword && matchStatus;
+            });
+
+            renderMasterTable(filtered);
+        }
+
+        async function pilihPelangganForEdit(pelanggan) {
+            selectedPelangganAdmin = pelanggan;
+            document.getElementById('editorTitleNama').innerText = `${pelanggan.nama_pelanggan} (No. Pel: ${pelanggan.nomor_pelanggan})`;
             document.getElementById('editStatusTagihan').value = pelanggan.status_tagihan_saat_ini;
             document.getElementById('editTotalTunggakan').value = pelanggan.total_tunggakan;
 
-            // Load Treatment List
             await loadAdminTreatments(pelanggan.nomor_pelanggan);
 
-            document.getElementById('editorContainer').classList.remove('hidden');
+            const panel = document.getElementById('editorPanelSection');
+            panel.classList.remove('hidden');
+            panel.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function tutupEditorPanel() {
+            document.getElementById('editorPanelSection').classList.add('hidden');
+            selectedPelangganAdmin = null;
         }
 
         async function simpanUpdateStatus() {
@@ -246,7 +394,8 @@
             if (error) {
                 alert("Gagal memperbarui status: " + error.message);
             } else {
-                alert("Status tagihan pelanggan berhasil diperbarui!");
+                alert("Status tagihan berhasil diperbarui!");
+                await loadMasterData();
             }
         }
 
@@ -258,7 +407,7 @@
             const ket = document.getElementById('inputKetTreatment').value.trim();
 
             if (!tgl) {
-                alert("Pilih tanggal treatment terlebih dahulu.");
+                alert("Pilih tanggal tindakan terlebih dahulu.");
                 return;
             }
 
@@ -281,7 +430,7 @@
         }
 
         async function loadAdminTreatments(nomorPelanggan) {
-            const tbody = document.getElementById('adminTreatmentTableBody');
+            const tbody = document.getElementById('adminTreatmentLogBody');
             tbody.innerHTML = '';
 
             const { data: treatments } = await supabaseClient
@@ -291,7 +440,7 @@
                 .order('tanggal_treatment', { ascending: false });
 
             if (!treatments || treatments.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" class="px-4 py-4 text-center text-slate-400 italic">Belum ada riwayat treatment.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="4" class="px-4 py-3 text-center text-slate-400 italic">Belum ada riwayat treatment.</td></tr>';
                 return;
             }
 
@@ -302,11 +451,11 @@
 
                 const html = `
                     <tr class="border-b hover:bg-slate-50">
-                        <td class="px-4 py-3 font-medium text-slate-800">${dateFormatted}</td>
-                        <td class="px-4 py-3 font-semibold text-blue-900">${item.jenis_treatment}</td>
-                        <td class="px-4 py-3 text-slate-600">${item.keterangan || '-'}</td>
-                        <td class="px-4 py-3 text-center">
-                            <button onclick="hapusTreatment(${item.id})" class="text-xs bg-red-100 hover:bg-red-200 text-red-700 px-2.5 py-1 rounded">
+                        <td class="px-3 py-2 font-medium text-slate-800">${dateFormatted}</td>
+                        <td class="px-3 py-2 font-bold text-blue-900">${item.jenis_treatment}</td>
+                        <td class="px-3 py-2 text-slate-600">${item.keterangan || '-'}</td>
+                        <td class="px-3 py-2 text-center">
+                            <button onclick="hapusTreatment(${item.id})" class="text-[10px] bg-red-100 hover:bg-red-200 text-red-700 px-2 py-0.5 rounded">
                                 Hapus
                             </button>
                         </td>
