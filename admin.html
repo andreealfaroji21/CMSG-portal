@@ -4,19 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel Admin Collection - PT Aetra Air Tangerang</title>
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Supabase JS Library -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="bg-slate-100 min-h-screen text-slate-800">
 
-    <!-- Header Utama -->
     <header class="bg-blue-950 text-white shadow-lg sticky top-0 z-50 border-b border-blue-800">
         <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
             <div class="flex items-center space-x-3">
                 <div class="bg-white p-1.5 rounded-lg shadow-sm">
-                    <img src="Logo Aetra Air Tangerang.jpg" alt="Logo PT Aetra Air Tangerang" class="h-9 w-auto object-contain" onerror="this.onerror=null; this.src='https://i.ibb.co/L9vL93Z/Logo-Aetra-Air-Tangerang.jpg';">
+                    <img src="assets/images/logo.jpg" alt="Logo PT Aetra Air Tangerang" class="h-9 w-auto object-contain" onerror="this.onerror=null; this.src='https://i.ibb.co/L9vL93Z/Logo-Aetra-Air-Tangerang.jpg';">
                 </div>
                 <div>
                     <h1 class="text-base md:text-lg font-bold tracking-wide">PANEL ADMIN COLLECTION</h1>
@@ -36,7 +33,6 @@
         </div>
     </header>
 
-    <!-- 1. FORM LOGIN ADMIN -->
     <main id="loginAdminSection" class="max-w-md mx-auto px-4 py-16">
         <div class="bg-white rounded-xl shadow-xl p-8 border border-slate-200">
             <div class="text-center mb-6">
@@ -67,10 +63,7 @@
         </div>
     </main>
 
-    <!-- 2. DASHBOARD ADMIN -->
     <main id="dashboardAdminSection" class="hidden max-w-5xl mx-auto px-4 py-8 space-y-6">
-        
-        <!-- CARDS RINGKASAN KPIS -->
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
             <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 text-center">
                 <p class="text-[11px] text-slate-400 font-medium uppercase">Total Pelanggan</p>
@@ -90,7 +83,6 @@
             </div>
         </div>
 
-        <!-- TABEL SEDERHANA: HANYA NAMA PELANGGAN -->
         <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
                 <div>
@@ -109,20 +101,14 @@
                             <th class="px-6 py-3 text-right">Aksi</th>
                         </tr>
                     </thead>
-                    <tbody id="masterPelangganTableBody">
-                        <!-- Diisi via JS -->
-                    </tbody>
+                    <tbody id="masterPelangganTableBody"></tbody>
                 </table>
             </div>
         </div>
-
     </main>
 
-    <!-- MODAL POPUP DETAIL & UPDATE DATA PELANGGAN -->
     <div id="detailModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
         <div class="bg-white w-full max-w-4xl rounded-2xl shadow-2xl overflow-hidden my-8 border border-slate-200 max-h-[90vh] flex flex-col">
-            
-            <!-- Modal Header -->
             <div class="bg-blue-950 text-white px-6 py-4 flex justify-between items-center border-b border-blue-800">
                 <div>
                     <span class="text-[10px] bg-blue-800 text-blue-200 font-bold px-2 py-0.5 rounded uppercase">Detail & Kelola Pelanggan</span>
@@ -131,10 +117,7 @@
                 <button onclick="tutupModal()" class="text-white hover:bg-blue-900 p-1.5 rounded-lg text-lg">✕</button>
             </div>
 
-            <!-- Modal Body (Scrollable) -->
             <div class="p-6 overflow-y-auto space-y-6">
-                
-                <!-- Rincian Data Pelanggan -->
                 <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
                     <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Informasi Pelanggan</h4>
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
@@ -157,10 +140,7 @@
                     </div>
                 </div>
 
-                <!-- Form Update Status & Input Treatment Baru -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    
-                    <!-- Form 1: Update Status Tagihan -->
                     <div class="bg-white p-4 rounded-xl border border-slate-200 space-y-3">
                         <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider border-b pb-2">1. Update Status & Tunggakan</h4>
                         
@@ -186,7 +166,6 @@
                         </button>
                     </div>
 
-                    <!-- Form 2: Input Treatment Baru -->
                     <div class="bg-white p-4 rounded-xl border border-slate-200 space-y-3">
                         <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider border-b pb-2">2. Tambah Treatment Field Baru</h4>
                         
@@ -216,10 +195,8 @@
                             + Tambah Treatment
                         </button>
                     </div>
-
                 </div>
 
-                <!-- Tabel Historis Treatment Pelanggan Ini -->
                 <div class="bg-white p-4 rounded-xl border border-slate-200">
                     <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider border-b pb-2 mb-3">Historis Treatment Terdaftar</h4>
                     <div class="overflow-x-auto">
@@ -232,27 +209,21 @@
                                     <th class="px-3 py-2 text-center">Aksi</th>
                                 </tr>
                             </thead>
-                            <tbody id="adminTreatmentLogBody">
-                                <!-- Diisi via JS -->
-                            </tbody>
+                            <tbody id="adminTreatmentLogBody"></tbody>
                         </table>
                     </div>
                 </div>
-
             </div>
 
-            <!-- Modal Footer -->
             <div class="bg-slate-100 px-6 py-3 border-t border-slate-200 text-right">
                 <button onclick="tutupModal()" class="bg-slate-300 hover:bg-slate-400 text-slate-800 font-semibold px-4 py-1.5 rounded-lg text-xs">
                     Tutup Modal
                 </button>
             </div>
-
         </div>
     </div>
 
     <script>
-        // --- KONFIGURASI SUPABASE & ADMIN PIN ---
         const SUPABASE_URL = "URL_SUPABASE_ANDA";
         const SUPABASE_ANON_KEY = "ANON_KEY_SUPABASE_ANDA";
         const ADMIN_PIN_RAHASIA = "123456";
@@ -296,19 +267,23 @@
         }
 
         async function loadMasterData() {
-            const { data: pelangganList, error } = await supabaseClient
-                .from('pelanggan')
-                .select('*')
-                .order('nama_pelanggan', { ascending: true });
+            try {
+                const { data: pelangganList, error } = await supabaseClient
+                    .from('pelanggan')
+                    .select('*')
+                    .order('nama_pelanggan', { ascending: true });
 
-            if (error) {
-                alert("Gagal memuat data: " + error.message);
-                return;
+                if (error) {
+                    alert("Gagal memuat data: " + error.message);
+                    return;
+                }
+
+                allPelangganList = pelangganList || [];
+                updateKPIs(allPelangganList);
+                renderMasterTable(allPelangganList);
+            } catch (err) {
+                alert("Kesalahan Sistem: " + err.message);
             }
-
-            allPelangganList = pelangganList || [];
-            updateKPIs(allPelangganList);
-            renderMasterTable(allPelangganList);
         }
 
         function updateKPIs(data) {
@@ -347,7 +322,6 @@
                     </td>
                 `;
 
-                // Pasang Event Listener Aman tanpa JSON Escape Issue
                 const actionElement = tr.querySelector('.btn-detail');
                 const nameElement = tr.querySelector('td');
 
