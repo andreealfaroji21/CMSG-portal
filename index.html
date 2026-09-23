@@ -10,26 +10,27 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="bg-slate-100 min-h-screen">
-    <!-- Header dengan Logo Resmi -->
-    <header class="bg-blue-900 text-white shadow-md">
-        <div class="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
+    <!-- Header Utama -->
+    <header class="bg-blue-900 text-white shadow-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
             <div class="flex items-center space-x-4">
-                <div class="bg-white p-2 rounded-lg shadow-sm flex items-center justify-center">
+                <div class="bg-white p-1.5 rounded-lg shadow-sm flex items-center justify-center">
                     <img src="Logo Aetra Air Tangerang.jpg" alt="Logo PT Aetra Air Tangerang" class="h-10 w-auto object-contain" onerror="this.onerror=null; this.src='https://i.ibb.co/L9vL93Z/Logo-Aetra-Air-Tangerang.jpg';">
                 </div>
                 <div>
-                    <h1 class="text-xl font-bold tracking-wide">PT AETRA AIR TANGERANG</h1>
+                    <h1 class="text-lg md:text-xl font-bold tracking-wide">PT AETRA AIR TANGERANG</h1>
                     <p class="text-xs text-blue-200">Divisi Collection - Portal Informasi Aktivitas Kepelangganan</p>
                 </div>
             </div>
+            <button id="btnLogout" onclick="resetSemua()" class="hidden text-xs bg-red-600 hover:bg-red-700 text-white font-medium px-4 py-2 rounded-md transition-colors">
+                Keluar / Cari Lain
+            </button>
         </div>
     </header>
 
-    <!-- Main Content -->
-    <main class="max-w-4xl mx-auto px-4 py-8">
-        
-        <!-- Form Pencarian & Verifikasi OTP -->
-        <div id="searchFormCard" class="bg-white rounded-lg shadow-md p-6 mb-8 max-w-xl mx-auto">
+    <!-- Halaman Form Verifikasi (Tampilan Awal) -->
+    <main id="authContainer" class="max-w-4xl mx-auto px-4 py-12">
+        <div id="searchFormCard" class="bg-white rounded-lg shadow-md p-6 max-w-xl mx-auto border border-slate-200">
             <h2 class="text-lg font-semibold text-slate-800 mb-1">Cek Status Pelanggan</h2>
             <p id="formInstruction" class="text-xs text-slate-500 mb-6">Masukkan Nomor Pelanggan dan Nomor WhatsApp terdaftar untuk menerima OTP.</p>
             
@@ -47,7 +48,7 @@
                 </div>
 
                 <button id="btnAction" onclick="handleAuthAction()" 
-                    class="w-full bg-blue-800 hover:bg-blue-900 text-white font-medium px-6 py-2.5 rounded-md transition-colors">
+                    class="w-full bg-blue-800 hover:bg-blue-900 text-white font-medium px-6 py-2.5 rounded-md transition-colors shadow">
                     Kirim Kode OTP
                 </button>
 
@@ -57,48 +58,127 @@
             </div>
             <p id="errorMessage" class="text-red-500 text-xs mt-3 font-semibold hidden"></p>
         </div>
-
-        <!-- Tampilan Hasil Informasi & Historis Treatment -->
-        <div id="resultContainer" class="hidden space-y-6">
-            <div class="bg-white rounded-lg shadow-md p-6">
-                <div class="flex justify-between items-center border-b pb-2 mb-4">
-                    <h3 class="text-md font-semibold text-slate-500 uppercase tracking-wide">Informasi Pelanggan</h3>
-                    <button onclick="resetSemua()" class="text-xs text-blue-700 hover:underline font-medium">Cari Pelanggan Lain</button>
-                </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <p class="text-xs text-slate-400">Nomor Pelanggan</p>
-                        <p id="resNoPelanggan" class="font-bold text-slate-800 text-lg">-</p>
-                    </div>
-                    <div>
-                        <p class="text-xs text-slate-400">Nama Pelanggan</p>
-                        <p id="resNama" class="font-bold text-slate-800 text-lg">-</p>
-                    </div>
-                    <div class="md:col-span-2">
-                        <p class="text-xs text-slate-400">Alamat</p>
-                        <p id="resAlamat" class="text-slate-700">-</p>
-                    </div>
-                    <div>
-                        <p class="text-xs text-slate-400">Status Tagihan</p>
-                        <span id="resStatus" class="inline-block mt-1 px-3 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">-</span>
-                    </div>
-                    <div>
-                        <p class="text-xs text-slate-400">Total Tunggakan</p>
-                        <p id="resTunggakan" class="font-bold text-red-600 text-lg">-</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="bg-white rounded-lg shadow-md p-6">
-                <h3 class="text-md font-semibold text-slate-500 uppercase tracking-wide border-b pb-2 mb-6">Historis Treatment & Tindakan Field</h3>
-                <div id="timelineContainer" class="relative border-l-2 border-blue-200 ml-4 space-y-6"></div>
-            </div>
-        </div>
-
     </main>
 
+    <!-- DASHBOARD PANEL LAYOUT (Halaman Setelah Verifikasi OTP) -->
+    <div id="dashboardContainer" class="hidden max-w-7xl mx-auto px-4 py-8">
+        <div class="flex flex-col md:flex-row gap-6">
+            
+            <!-- PANEL SIDEBAR DISI KIRI -->
+            <aside class="w-full md:w-1/4 bg-white rounded-lg shadow-md p-4 h-fit border border-slate-200">
+                <div class="mb-4 pb-3 border-b border-slate-100">
+                    <p class="text-xs text-slate-400">Login Sebagai:</p>
+                    <p id="sidebarNama" class="font-bold text-slate-800 text-sm truncate">-</p>
+                    <p id="sidebarNoPel" class="text-xs text-blue-700 font-medium">-</p>
+                </div>
+                
+                <nav class="space-y-1">
+                    <button id="btnMenu1" onclick="switchPanel(1)" 
+                        class="w-full text-left px-4 py-3 rounded-lg text-sm font-semibold flex items-center gap-3 transition-colors bg-blue-800 text-white">
+                        <span>👤</span> Data Pelanggan
+                    </button>
+                    <button id="btnMenu2" onclick="switchPanel(2)" 
+                        class="w-full text-left px-4 py-3 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100 flex items-center gap-3 transition-colors">
+                        <span>💳</span> Histori Pembayaran
+                    </button>
+                    <button id="btnMenu3" onclick="switchPanel(3)" 
+                        class="w-full text-left px-4 py-3 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100 flex items-center gap-3 transition-colors">
+                        <span>⚠️</span> Tunggakan & Treatment
+                    </button>
+                </nav>
+            </aside>
+
+            <!-- PANEL KONTEN UTAMA DI SISI KANAN -->
+            <section class="flex-grow w-full md:w-3/4 space-y-6">
+                
+                <!-- OPSI 1: PANEL DATA PELANGGAN -->
+                <div id="panel1" class="bg-white rounded-lg shadow-md p-6 border border-slate-200">
+                    <h3 class="text-md font-bold text-slate-800 uppercase tracking-wide border-b pb-3 mb-4 flex items-center gap-2">
+                        <span>👤</span> Data Profil Pelanggan
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="bg-slate-50 p-4 rounded-lg border border-slate-100">
+                            <p class="text-xs text-slate-400">Nomor Sambungan / Pelanggan</p>
+                            <p id="resNoPelanggan" class="font-bold text-slate-800 text-lg">-</p>
+                        </div>
+                        <div class="bg-slate-50 p-4 rounded-lg border border-slate-100">
+                            <p class="text-xs text-slate-400">Nama Pelanggan</p>
+                            <p id="resNama" class="font-bold text-slate-800 text-lg">-</p>
+                        </div>
+                        <div class="bg-slate-50 p-4 rounded-lg border border-slate-100 md:col-span-2">
+                            <p class="text-xs text-slate-400">Alamat Aliran Air</p>
+                            <p id="resAlamat" class="font-semibold text-slate-700 text-md">-</p>
+                        </div>
+                        <div class="bg-slate-50 p-4 rounded-lg border border-slate-100">
+                            <p class="text-xs text-slate-400">Nomor Meter Air</p>
+                            <p id="resNomorMeter" class="font-bold text-slate-800 text-md">-</p>
+                        </div>
+                        <div class="bg-slate-50 p-4 rounded-lg border border-slate-100">
+                            <p class="text-xs text-slate-400">Nomor WhatsApp Terdaftar</p>
+                            <p id="resNoWa" class="font-bold text-slate-800 text-md">-</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- OPSI 2: PANEL HISTORI PEMBAYARAN -->
+                <div id="panel2" class="hidden bg-white rounded-lg shadow-md p-6 border border-slate-200">
+                    <h3 class="text-md font-bold text-slate-800 uppercase tracking-wide border-b pb-3 mb-4 flex items-center gap-2">
+                        <span>💳</span> Catatan Histori Pembayaran
+                    </h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm text-left text-slate-600">
+                            <thead class="text-xs text-slate-700 uppercase bg-slate-100 border-b">
+                                <tr>
+                                    <th class="px-4 py-3">Tanggal Bayar</th>
+                                    <th class="px-4 py-3">Periode</th>
+                                    <th class="px-4 py-3">Jumlah Bayar</th>
+                                    <th class="px-4 py-3">Metode</th>
+                                    <th class="px-4 py-3">No. Resi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="paymentTableBody">
+                                <!-- Data pembayaran diisi via JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- OPSI 3: PANEL TUNGGAKAN SAAT INI & TREATMENT -->
+                <div id="panel3" class="hidden space-y-6">
+                    <!-- Ringkasan Tunggakan -->
+                    <div class="bg-white rounded-lg shadow-md p-6 border border-slate-200">
+                        <h3 class="text-md font-bold text-slate-800 uppercase tracking-wide border-b pb-3 mb-4 flex items-center gap-2">
+                            <span>⚠️</span> Status Tunggakan Tagihan Saat Ini
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="p-4 rounded-lg bg-red-50 border border-red-200">
+                                <p class="text-xs text-red-600 font-medium">Status Tagihan / Sambungan</p>
+                                <span id="resStatus" class="inline-block mt-1 px-3 py-1 text-sm font-bold rounded-full bg-red-200 text-red-900">-</span>
+                            </div>
+                            <div class="p-4 rounded-lg bg-red-50 border border-red-200">
+                                <p class="text-xs text-red-600 font-medium">Total Tunggakan Belum Dibayar</p>
+                                <p id="resTunggakan" class="font-extrabold text-red-700 text-2xl mt-1">-</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Historis Treatment Berjalan -->
+                    <div class="bg-white rounded-lg shadow-md p-6 border border-slate-200">
+                        <h3 class="text-md font-bold text-slate-800 uppercase tracking-wide border-b pb-3 mb-6">
+                            Historis Treatment & Tindakan Petugas Field
+                        </h3>
+                        <div id="timelineContainer" class="relative border-l-2 border-blue-200 ml-4 space-y-6">
+                            <!-- Timeline Treatment diisi via JavaScript -->
+                        </div>
+                    </div>
+                </div>
+
+            </section>
+        </div>
+    </div>
+
     <script>
-        // --- UBAH DUA BARIS DI BAWAH DENGAN KUNCI API SUPABASE ANDA ---
+        // --- KONFIGURASI SUPABASE ---
         const SUPABASE_URL = "https://wpjwoogpvmuguutwtuxj.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indwandvb2dwdm11Z3V1dHd0dXhqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAwNDM3NDAsImV4cCI6MjEwNTYxOTc0MH0.iY7ekod54fU1Dtdw8_eeO65G_W6UVQJzCz8SgbfYaIQ";
         
@@ -189,9 +269,6 @@
 
         async function prosesVerifikasiOTP() {
             const inputOTP = document.getElementById('inputWaOtp').value.replace(/\s+/g, '').trim();
-            const errorMessage = document.getElementById('errorMessage');
-
-            errorMessage.classList.add('hidden');
 
             if (String(inputOTP) !== String(currentGeneratedOTP)) {
                 showError("Kode OTP salah. Silakan periksa kembali kode yang dikirimkan.");
@@ -200,32 +277,97 @@
 
             try {
                 const pelanggan = currentPelangganData;
+
+                // Set Info Sidebar & Data Pelanggan
+                document.getElementById('sidebarNama').innerText = pelanggan.nama_pelanggan;
+                document.getElementById('sidebarNoPel').innerText = "No: " + pelanggan.nomor_pelanggan;
+                
                 document.getElementById('resNoPelanggan').innerText = pelanggan.nomor_pelanggan;
                 document.getElementById('resNama').innerText = pelanggan.nama_pelanggan;
                 document.getElementById('resAlamat').innerText = pelanggan.alamat;
+                document.getElementById('resNomorMeter').innerText = pelanggan.nomor_meter || '-';
+                document.getElementById('resNoWa').innerText = pelanggan.nomor_whatsapp || '-';
+
+                // Set Panel 3 (Tunggakan & Treatment)
                 document.getElementById('resStatus').innerText = pelanggan.status_tagihan_saat_ini;
                 document.getElementById('resTunggakan').innerText = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(pelanggan.total_tunggakan);
 
-                const { data: treatments, error: errTreatment } = await supabaseClient
+                // Fetch Data Histori Pembayaran
+                const { data: payments } = await supabaseClient
+                    .from('histori_pembayaran')
+                    .select('*')
+                    .eq('nomor_pelanggan', pelanggan.nomor_pelanggan)
+                    .order('tanggal_bayar', { ascending: false });
+
+                renderPayments(payments || []);
+
+                // Fetch Data Treatment
+                const { data: treatments } = await supabaseClient
                     .from('historis_treatment')
                     .select('*')
                     .eq('nomor_pelanggan', pelanggan.nomor_pelanggan)
                     .order('tanggal_treatment', { ascending: true });
 
-                if (errTreatment) {
-                    console.error("Error Fetch Treatment:", errTreatment);
-                    renderTimeline([]);
-                } else {
-                    renderTimeline(treatments || []);
-                }
+                renderTimeline(treatments || []);
 
-                document.getElementById('searchFormCard').classList.add('hidden');
-                document.getElementById('resultContainer').classList.remove('hidden');
+                // Tampilkan Dashboard
+                document.getElementById('authContainer').classList.add('hidden');
+                document.getElementById('dashboardContainer').classList.remove('hidden');
+                document.getElementById('btnLogout').classList.remove('hidden');
 
             } catch (err) {
-                console.error("System Crash:", err);
                 showError("Terjadi kesalahan sistem: " + err.message);
             }
+        }
+
+        // Navigasi Antar Menu Panel Sidebar
+        function switchPanel(panelNumber) {
+            // Hide all panels
+            document.getElementById('panel1').classList.add('hidden');
+            document.getElementById('panel2').classList.add('hidden');
+            document.getElementById('panel3').classList.add('hidden');
+
+            // Reset menu styles
+            const btn1 = document.getElementById('btnMenu1');
+            const btn2 = document.getElementById('btnMenu2');
+            const btn3 = document.getElementById('btnMenu3');
+
+            [btn1, btn2, btn3].forEach(btn => {
+                btn.className = "w-full text-left px-4 py-3 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100 flex items-center gap-3 transition-colors";
+            });
+
+            // Show selected panel & highlight menu
+            document.getElementById(`panel${panelNumber}`).classList.remove('hidden');
+            document.getElementById(`btnMenu${panelNumber}`).className = "w-full text-left px-4 py-3 rounded-lg text-sm font-semibold flex items-center gap-3 transition-colors bg-blue-800 text-white shadow-sm";
+        }
+
+        function renderPayments(payments) {
+            const tbody = document.getElementById('paymentTableBody');
+            tbody.innerHTML = '';
+
+            if (payments.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="px-4 py-4 text-center text-slate-400 italic">Belum ada riwayat pembayaran.</td></tr>';
+                return;
+            }
+
+            payments.forEach(item => {
+                const dateFormatted = new Date(item.tanggal_bayar).toLocaleDateString('id-ID', {
+                    day: 'numeric', month: 'short', year: 'numeric'
+                });
+
+                const amountFormatted = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(item.jumlah_bayar);
+
+                const html = `
+                    <tr class="border-b hover:bg-slate-50">
+                        <td class="px-4 py-3 font-medium text-slate-800">${dateFormatted}</td>
+                        <td class="px-4 py-3">${item.periode_bulan}</td>
+                        <td class="px-4 py-3 font-semibold text-green-700">${amountFormatted}</td>
+                        <td class="px-4 py-3"><span class="px-2 py-0.5 text-xs bg-slate-100 rounded text-slate-700">${item.metode_pembayaran}</span></td>
+                        <td class="px-4 py-3 text-xs font-mono text-slate-500">${item.nomor_resi}</td>
+                    </tr>
+                `;
+                tbody.innerHTML += html;
+            });
         }
 
         function renderTimeline(treatments) {
@@ -290,8 +432,10 @@
         function resetSemua() {
             resetKeFormAwal();
             document.getElementById('inputNoPelanggan').value = '';
-            document.getElementById('resultContainer').classList.add('hidden');
-            document.getElementById('searchFormCard').classList.remove('hidden');
+            document.getElementById('dashboardContainer').classList.add('hidden');
+            document.getElementById('btnLogout').classList.add('hidden');
+            document.getElementById('authContainer').classList.remove('hidden');
+            switchPanel(1);
         }
     </script>
 </body>
