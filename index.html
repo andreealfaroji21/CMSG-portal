@@ -15,7 +15,7 @@
         <div class="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
             <div class="flex items-center space-x-4">
                 <div class="bg-white p-2 rounded-lg shadow-sm flex items-center justify-center">
-                    <img src="Logo Aetra Air Tangerang.jpg" alt="Logo PT Aetra Air Tangerang" class="h-10 w-auto object-contain">
+                    <img src="Logo Aetra Air Tangerang.jpg" alt="Logo PT Aetra Air Tangerang" class="h-10 w-auto object-contain" onerror="this.onerror=null; this.src='https://i.ibb.co/L9vL93Z/Logo-Aetra-Air-Tangerang.jpg';">
                 </div>
                 <div>
                     <h1 class="text-xl font-bold tracking-wide">PT AETRA AIR TANGERANG</h1>
@@ -36,13 +36,13 @@
             <div class="space-y-4">
                 <div>
                     <label class="block text-xs font-semibold text-slate-600 mb-1">Nomor Pelanggan</label>
-                    <input type="text" id="inputNoPelanggan" placeholder="Contoh: 92728111028" 
+                    <input type="text" id="inputNoPelanggan" placeholder="Contoh: 92728111029" 
                         class="w-full px-4 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600">
                 </div>
 
                 <div>
                     <label id="labelWaOtp" class="block text-xs font-semibold text-slate-600 mb-1">Nomor WhatsApp Terdaftar</label>
-                    <input type="text" id="inputWaOtp" placeholder="Contoh: 087796842024" 
+                    <input type="text" id="inputWaOtp" placeholder="Contoh: 082268082300" 
                         class="w-full px-4 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600">
                 </div>
 
@@ -98,7 +98,7 @@
     </main>
 
     <script>
-        // --- UBAH DUA BARIS DI BAWAH DENGAN DATA DARI SUPABASE ANDA ---
+        // --- UBAH DUA BARIS DI BAWAH DENGAN KUNCI API SUPABASE ANDA ---
         const SUPABASE_URL = "https://wpjwoogpvmuguutwtuxj.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indwandvb2dwdm11Z3V1dHd0dXhqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAwNDM3NDAsImV4cCI6MjEwNTYxOTc0MH0.iY7ekod54fU1Dtdw8_eeO65G_W6UVQJzCz8SgbfYaIQ";
         
@@ -125,7 +125,6 @@
             return cleaned;
         }
 
-        // Tahap 1: Validasi Pelanggan & Kirim OTP WA via Fonnte
         async function prosesMintaOTP() {
             const noPelanggan = document.getElementById('inputNoPelanggan').value.replace(/\s+/g, '').trim();
             const rawNoWA = document.getElementById('inputWaOtp').value.replace(/\s+/g, '').trim();
@@ -138,7 +137,6 @@
                 return;
             }
 
-            // 1. Query Data ke Supabase
             const { data: pelanggan, error } = await supabaseClient
                 .from('pelanggan')
                 .select('*')
@@ -156,7 +154,6 @@
 
             const dataTarget = pelanggan[0];
 
-            // 2. Validasi Nomor WA Terdaftar
             const inputWaClean = normalizePhone(rawNoWA);
             const dbWaClean = normalizePhone(dataTarget.nomor_whatsapp);
 
@@ -165,47 +162,11 @@
                 return;
             }
 
-            // 3. Simpan Data & Buat Kode OTP 4 Digit
             currentPelangganData = dataTarget;
             currentGeneratedOTP = Math.floor(1000 + Math.random() * 9000).toString();
 
-            // 4. KIRIM OTP VIA FONNTE WA GATEWAY API
-            const FONNTE_TOKEN = "5zbvv2UuQ3evobep6xtF"; // Masukkan API Token dari Fonnte di sini
-            
-            const messageText = `*PT AETRA AIR TANGERANG*\n\nKode OTP Anda untuk mengakses Portal Informasi Aktivitas Kepelangganan adalah: *${currentGeneratedOTP}*\n\nJangan berikan kode ini kepada siapapun demi keamanan data Anda.`;
+            alert(`[SIMULASI OTP WA]\nKode OTP verifikasi Anda adalah: ${currentGeneratedOTP}`);
 
-            // Ubah tombol menjadi loading
-            const btnAction = document.getElementById('btnAction');
-            btnAction.innerText = 'Sending WA OTP...';
-            btnAction.disabled = true;
-
-            try {
-                const formData = new FormData();
-                formData.append('target', rawNoWA);
-                formData.append('message', messageText);
-
-                const response = await fetch('https://api.fonnte.com/send', {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': FONNTE_TOKEN
-                    },
-                    body: formData
-                });
-
-                const resData = await response.json();
-
-                if (resData.status) {
-                    alert(`Kode OTP telah terkirim via WhatsApp ke nomor ${rawNoWA}`);
-                } else {
-                    console.warn("Fonnte Warning:", resData);
-                    alert(`[Simulasi Fallback] Gagal kirim WA (Cek Token/Kredit Fonnte). Kode OTP Anda: ${currentGeneratedOTP}`);
-                }
-            } catch (err) {
-                console.error("Fonnte Error:", err);
-                alert(`[Simulasi Fallback] Kode OTP Anda adalah: ${currentGeneratedOTP}`);
-            }
-
-            // 5. Ubah Tampilan Kolom Input Menjadi OTP
             isOtpSent = true;
             document.getElementById('inputNoPelanggan').disabled = true;
             document.getElementById('inputNoPelanggan').classList.add('bg-slate-100');
@@ -219,11 +180,52 @@
             document.getElementById('labelWaOtp').innerText = 'Kode OTP WhatsApp';
             document.getElementById('formInstruction').innerText = `Kode OTP telah dikirimkan ke nomor WA ${rawNoWA}. Silakan masukkan kode pada kolom di bawah.`;
             
-            btnAction.disabled = false;
+            const btnAction = document.getElementById('btnAction');
             btnAction.innerText = 'Verifikasi Kode OTP';
             btnAction.className = 'w-full bg-green-700 hover:bg-green-800 text-white font-medium px-6 py-2.5 rounded-md transition-colors';
             
             document.getElementById('btnResetOtp').classList.remove('hidden');
+        }
+
+        async function prosesVerifikasiOTP() {
+            const inputOTP = document.getElementById('inputWaOtp').value.replace(/\s+/g, '').trim();
+            const errorMessage = document.getElementById('errorMessage');
+
+            errorMessage.classList.add('hidden');
+
+            if (String(inputOTP) !== String(currentGeneratedOTP)) {
+                showError("Kode OTP salah. Silakan periksa kembali kode yang dikirimkan.");
+                return;
+            }
+
+            try {
+                const pelanggan = currentPelangganData;
+                document.getElementById('resNoPelanggan').innerText = pelanggan.nomor_pelanggan;
+                document.getElementById('resNama').innerText = pelanggan.nama_pelanggan;
+                document.getElementById('resAlamat').innerText = pelanggan.alamat;
+                document.getElementById('resStatus').innerText = pelanggan.status_tagihan_saat_ini;
+                document.getElementById('resTunggakan').innerText = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(pelanggan.total_tunggakan);
+
+                const { data: treatments, error: errTreatment } = await supabaseClient
+                    .from('historis_treatment')
+                    .select('*')
+                    .eq('nomor_pelanggan', pelanggan.nomor_pelanggan)
+                    .order('tanggal_treatment', { ascending: true });
+
+                if (errTreatment) {
+                    console.error("Error Fetch Treatment:", errTreatment);
+                    renderTimeline([]);
+                } else {
+                    renderTimeline(treatments || []);
+                }
+
+                document.getElementById('searchFormCard').classList.add('hidden');
+                document.getElementById('resultContainer').classList.remove('hidden');
+
+            } catch (err) {
+                console.error("System Crash:", err);
+                showError("Terjadi kesalahan sistem: " + err.message);
+            }
         }
 
         function renderTimeline(treatments) {
@@ -271,7 +273,7 @@
 
             const fieldWaOtp = document.getElementById('inputWaOtp');
             fieldWaOtp.value = '';
-            fieldWaOtp.placeholder = 'Contoh: 087796842024';
+            fieldWaOtp.placeholder = 'Contoh: 082268082300';
             fieldWaOtp.removeAttribute('maxlength');
             fieldWaOtp.classList.remove('text-center', 'font-bold', 'tracking-widest', 'text-lg');
 
